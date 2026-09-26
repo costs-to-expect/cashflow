@@ -58,12 +58,32 @@ class Uri
 
     public static function categories(): string
     {
-        return '/'.self::VERSION.'/resource-types/'.self::resourceTypeId().'/categories?collection=true';
+        return self::categoriesBase().'?collection=true';
+    }
+
+    public static function category(string $categoryId): string
+    {
+        return self::categoriesBase().'/'.$categoryId;
     }
 
     public static function subcategories(string $categoryId): string
     {
-        return '/'.self::VERSION.'/resource-types/'.self::resourceTypeId().'/categories/'.$categoryId.'/subcategories?collection=true';
+        return self::subcategoriesBase($categoryId).'?collection=true';
+    }
+
+    public static function subcategory(string $categoryId, string $subcategoryId): string
+    {
+        return self::subcategoriesBase($categoryId).'/'.$subcategoryId;
+    }
+
+    private static function categoriesBase(): string
+    {
+        return '/'.self::VERSION.'/resource-types/'.self::resourceTypeId().'/categories';
+    }
+
+    private static function subcategoriesBase(string $categoryId): string
+    {
+        return self::category($categoryId).'/subcategories';
     }
 
     public static function itemCategories(string $resourceId, string $itemId): string

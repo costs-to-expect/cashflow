@@ -38,6 +38,12 @@ class ProcessRecurringExpenses extends Command
             ->get();
 
         foreach ($due as $recurringExpense) {
+            if ($recurringExpense->ends_on !== null && $recurringExpense->next_run_date->gt($recurringExpense->ends_on)) {
+                $recurringExpense->update(['active' => false]);
+
+                continue;
+            }
+
             $alreadyRun = RecurringExpenseRun::query()
                 ->where('recurring_expense_id', $recurringExpense->id)
                 ->where('run_date', $recurringExpense->next_run_date)
@@ -56,6 +62,8 @@ class ProcessRecurringExpenses extends Command
                     'effective_date' => $recurringExpense->next_run_date->toDateString(),
                     'currency_id' => $recurringExpense->currency_id,
                     'total' => (string) $recurringExpense->total,
+                    'category_id' => $recurringExpense->category_id,
+                    'subcategory_id' => $recurringExpense->subcategory_id,
                 ],
                 $recurringExpense->allocations->map(fn ($allocation) => [
                     'resource_id' => $allocation->resource_id,

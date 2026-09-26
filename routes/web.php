@@ -40,6 +40,17 @@ Route::middleware('auth')->group(function () {
     Route::post('/recurring/{recurringExpense}/toggle', [RecurringAction::class, 'toggle'])->name('recurring.toggle');
     Route::post('/recurring/{recurringExpense}/delete', [RecurringAction::class, 'destroy'])->name('recurring.delete');
 
+    Route::get('/settings', [SettingsView::class, 'index'])->name('settings.index');
+
     Route::get('/settings/default-split', [SettingsView::class, 'defaultSplit'])->name('settings.default-split');
     Route::post('/settings/default-split', [SettingsAction::class, 'saveDefaultSplit'])->name('settings.default-split.action');
+
+    Route::get('/settings/resource-naming', [SettingsView::class, 'resourceNaming'])->name('settings.resource-naming');
+    Route::post('/settings/resource-naming', [SettingsAction::class, 'saveResourceNaming'])->name('settings.resource-naming.action');
+
+    Route::get('/settings/categories', [SettingsView::class, 'categories'])->name('settings.categories');
+    Route::post('/settings/categories', [SettingsAction::class, 'storeCategory'])->name('settings.categories.store');
+    Route::post('/settings/categories/{category_id}/update', [SettingsAction::class, 'updateCategory'])->name('settings.categories.update');
+    Route::post('/settings/categories/{category_id}/subcategories', [SettingsAction::class, 'storeSubcategory'])->name('settings.categories.subcategories.store');
+    Route::post('/settings/categories/{category_id}/subcategories/{subcategory_id}/update', [SettingsAction::class, 'updateSubcategory'])->name('settings.categories.subcategories.update');
 });

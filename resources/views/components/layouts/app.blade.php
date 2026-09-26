@@ -23,7 +23,7 @@
                     <a href="{{ route('recurring.index') }}" class="text-sm text-gray-600 hover:text-gray-900 {{ request()->routeIs('recurring.*') ? 'font-semibold text-indigo-600' : '' }}">
                         Recurring
                     </a>
-                    <a href="{{ route('settings.default-split') }}" class="text-sm text-gray-600 hover:text-gray-900 {{ request()->routeIs('settings.*') ? 'font-semibold text-indigo-600' : '' }}">
+                    <a href="{{ route('settings.index') }}" class="text-sm text-gray-600 hover:text-gray-900 {{ request()->routeIs('settings.*') ? 'font-semibold text-indigo-600' : '' }}">
                         Settings
                     </a>
                 </div>
@@ -48,7 +48,7 @@
                 @endforeach
 
                 <a href="{{ route('recurring.index') }}" class="block py-1 text-sm text-gray-600 {{ request()->routeIs('recurring.*') ? 'font-semibold text-indigo-600' : '' }}">Recurring</a>
-                <a href="{{ route('settings.default-split') }}" class="block py-1 text-sm text-gray-600 {{ request()->routeIs('settings.*') ? 'font-semibold text-indigo-600' : '' }}">Settings</a>
+                <a href="{{ route('settings.index') }}" class="block py-1 text-sm text-gray-600 {{ request()->routeIs('settings.*') ? 'font-semibold text-indigo-600' : '' }}">Settings</a>
                 <a href="{{ route('auth.sign-out.action') }}" class="block py-1 text-sm text-gray-500">Sign out</a>
             </div>
         </div>

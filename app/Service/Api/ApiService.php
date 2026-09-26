@@ -86,9 +86,29 @@ class ApiService
         return $this->http->get(Uri::categories());
     }
 
+    public function createCategory(string $name, string $description): array
+    {
+        return $this->http->post(Uri::categories(), ['name' => $name, 'description' => $description]);
+    }
+
+    public function updateCategory(string $categoryId, string $name, string $description): array
+    {
+        return $this->http->patch(Uri::category($categoryId), ['name' => $name, 'description' => $description]);
+    }
+
     public function subcategories(string $categoryId): array
     {
         return $this->http->get(Uri::subcategories($categoryId));
+    }
+
+    public function createSubcategory(string $categoryId, string $name, string $description): array
+    {
+        return $this->http->post(Uri::subcategories($categoryId), ['name' => $name, 'description' => $description]);
+    }
+
+    public function updateSubcategory(string $categoryId, string $subcategoryId, string $name, string $description): array
+    {
+        return $this->http->patch(Uri::subcategory($categoryId, $subcategoryId), ['name' => $name, 'description' => $description]);
     }
 
     public function itemCategories(string $resourceId, string $itemId): array

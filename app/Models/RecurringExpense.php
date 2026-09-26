@@ -17,14 +17,20 @@ class RecurringExpense extends Model
         'description',
         'currency_id',
         'total',
+        'category_id',
+        'subcategory_id',
         'frequency',
         'day_of_month',
+        'starts_on',
+        'ends_on',
         'next_run_date',
         'active',
     ];
 
     protected $casts = [
         'next_run_date' => 'date',
+        'starts_on' => 'date',
+        'ends_on' => 'date',
         'active' => 'boolean',
         'day_of_month' => 'integer',
     ];

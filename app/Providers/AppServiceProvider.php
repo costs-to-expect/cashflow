@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Models\Setting;
 use App\Service\Api\ApiService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\View;
@@ -28,8 +29,8 @@ class AppServiceProvider extends ServiceProvider
         });
 
         View::composer('*', function ($view) {
-            $view->with('resourceTermSingular', config('api.resource_term_singular'));
-            $view->with('resourceTermPlural', config('api.resource_term_plural'));
+            $view->with('resourceTermSingular', Setting::get('resource_term_singular', config('api.resource_term_singular')));
+            $view->with('resourceTermPlural', Setting::get('resource_term_plural', config('api.resource_term_plural')));
         });
     }
 }

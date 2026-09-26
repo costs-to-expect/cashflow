@@ -26,11 +26,14 @@ class RecurringController extends Controller
     public function create(): View
     {
         $currencies = $this->sortCurrenciesGbpFirst($this->currencies());
+        $categories = $this->categories();
 
         return view('recurring.create', [
             'children' => $this->children(),
             'currencies' => $currencies,
             'defaultCurrencyId' => $this->resolveDefaultCurrencyId($currencies),
+            'categories' => $categories,
+            'subcategoriesByCategory' => $this->subcategoriesByCategory($categories),
             'defaultSplit' => DefaultSplitAllocation::query()->orderBy('sort_order')->get(['resource_id', 'percentage'])->toArray(),
         ]);
     }
@@ -38,11 +41,14 @@ class RecurringController extends Controller
     public function edit(RecurringExpense $recurringExpense): View
     {
         $recurringExpense->load('allocations');
+        $categories = $this->categories();
 
         return view('recurring.edit', [
             'recurringExpense' => $recurringExpense,
             'children' => $this->children(),
             'currencies' => $this->sortCurrenciesGbpFirst($this->currencies()),
+            'categories' => $categories,
+            'subcategoriesByCategory' => $this->subcategoriesByCategory($categories),
         ]);
     }
 
@@ -63,5 +69,27 @@ class RecurringController extends Controller
         $currencies = $this->api->currencies();
 
         return $currencies['status'] === 200 ? $currencies['content'] : [];
+    }
+
+    private function categories(): array
+    {
+        $categories = $this->api->categories();
+
+        return $categories['status'] === 200 ? $categories['content'] : [];
+    }
+
+    private function subcategoriesByCategory(array $categories): array
+    {
+        $map = [];
+
+        foreach ($categories as $category) {
+            $response = $this->api->subcategories($category['id']);
+
+            $map[$category['id']] = $response['status'] === 200
+                ? collect($response['content'])->map(fn ($s) => ['id' => $s['id'], 'name' => $s['name']])->all()
+                : [];
+        }
+
+        return $map;
     }
 }

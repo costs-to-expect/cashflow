@@ -6,35 +6,36 @@ namespace App\Actions\Recurring;
 
 use App\Actions\ApiActionResult;
 use App\Models\RecurringExpense;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class CreateRecurringExpense
 {
+    public function __construct(private readonly NextRunDate $nextRunDate) {}
+
     /**
-     * @param  array{name: string, description: ?string, currency_id: string, total: string, day_of_month: int}  $expense
+     * @param  array{name: string, description: ?string, currency_id: string, total: string, category_id: ?string, subcategory_id: ?string, day_of_month: int, starts_on: string, ends_on: ?string}  $expense
      * @param  array<int, array{resource_id: string, percentage: int}>  $allocations
      */
     public function __invoke(array $expense, array $allocations): ApiActionResult
     {
         $dayOfMonth = (int) $expense['day_of_month'];
-        $today = Carbon::today();
+        $startsOn = Carbon::parse($expense['starts_on']);
 
-        $nextRunDate = $today->copy()->startOfMonth()->day(min($dayOfMonth, $today->daysInMonth));
+        $nextRunDate = ($this->nextRunDate)($dayOfMonth, $startsOn);
 
-        if ($nextRunDate->lt($today)) {
-            $followingMonth = $today->copy()->addMonthNoOverflow()->startOfMonth();
-            $nextRunDate = $followingMonth->day(min($dayOfMonth, $followingMonth->daysInMonth));
-        }
-
-        $recurringExpense = DB::transaction(function () use ($expense, $allocations, $nextRunDate, $dayOfMonth) {
+        $recurringExpense = DB::transaction(function () use ($expense, $allocations, $nextRunDate, $dayOfMonth, $startsOn) {
             $recurringExpense = RecurringExpense::create([
                 'name' => $expense['name'],
                 'description' => $expense['description'],
                 'currency_id' => $expense['currency_id'],
                 'total' => $expense['total'],
+                'category_id' => $expense['category_id'],
+                'subcategory_id' => $expense['subcategory_id'],
                 'frequency' => 'monthly',
                 'day_of_month' => $dayOfMonth,
+                'starts_on' => $startsOn,
+                'ends_on' => $expense['ends_on'],
                 'next_run_date' => $nextRunDate,
                 'active' => true,
             ]);

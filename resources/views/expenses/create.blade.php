@@ -50,16 +50,12 @@
                  data-term-singular="{{ $resourceTermSingular }}">
                 @foreach ($oldAllocations as $index => $allocation)
                     <div class="allocation-row grid grid-cols-[1fr_120px_auto] items-end gap-3">
-                        <div>
-                            <x-helper.form.field.select :name="'allocations['.$index.'][resource_id]'" :title="$resourceTermSingular" required
-                                :value="$allocation['resource_id']"
-                                :options="collect($children)->mapWithKeys(fn ($child) => [$child['id'] => $child['name']])"
-                                :errorKey="'allocations.'.$index.'.resource_id'" />
-                        </div>
-                        <div>
-                            <x-helper.form.field.number :name="'allocations['.$index.'][percentage]'" title="Percentage" required min="1" max="100"
-                                :value="$allocation['percentage']" :errorKey="'allocations.'.$index.'.percentage'" />
-                        </div>
+                        <x-helper.form.field.select :name="'allocations['.$index.'][resource_id]'" :title="$resourceTermSingular" required
+                            :value="$allocation['resource_id']"
+                            :options="collect($children)->mapWithKeys(fn ($child) => [$child['id'] => $child['name']])"
+                            :errorKey="'allocations.'.$index.'.resource_id'" />
+                        <x-helper.form.field.number :name="'allocations['.$index.'][percentage]'" title="Percentage" required min="1" max="100"
+                            :value="$allocation['percentage']" :errorKey="'allocations.'.$index.'.percentage'" />
                         <button type="button" class="remove-allocation {{ $isSplit ? '' : 'hidden' }} pb-2 text-sm text-red-600 hover:underline">Remove</button>
                     </div>
                 @endforeach

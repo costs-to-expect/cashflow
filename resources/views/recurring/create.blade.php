@@ -1,5 +1,6 @@
-<x-layouts.app title="Add recurring expense">
-    <h1 class="mb-6 text-lg font-semibold text-gray-900">Add recurring expense</h1>
+<x-layouts.app title="Add monthly recurring expense">
+    <h1 class="mb-2 text-lg font-semibold text-gray-900">Add monthly recurring expense</h1>
+    <p class="mb-6 text-sm text-gray-600">This expense is created automatically every month, between the start and (optional) end date below.</p>
 
     @if (count($children) === 0)
         <p class="text-sm text-gray-600">You need to <a href="{{ route('children.create') }}" class="text-indigo-600 hover:underline">add a {{ strtolower($resourceTermSingular) }}</a> first.</p>
@@ -16,7 +17,20 @@
                     :options="collect($currencies)->mapWithKeys(fn ($currency) => [$currency['id'] => $currency['code']])" />
             </div>
 
+            <div class="grid grid-cols-2 gap-4">
+                <x-helper.form.field.date name="starts_on" title="Starts on" required :value="old('starts_on', now()->toDateString())" />
+                <x-helper.form.field.date name="ends_on" title="Ends on" :value="old('ends_on')" />
+            </div>
+
             <x-helper.form.field.number name="total" title="Total amount" required min="0" step="0.01" :value="old('total')" data-format="number" data-points="2" />
+
+            <div class="grid grid-cols-2 gap-4">
+                <x-helper.form.field.select name="category_id" title="Category" :value="old('category_id')"
+                    :options="collect(['' => 'None'])->merge(collect($categories)->mapWithKeys(fn ($category) => [$category['id'] => $category['name']]))"
+                    data-subcategories="{{ json_encode($subcategoriesByCategory) }}" />
+                <x-helper.form.field.select name="subcategory_id" title="Subcategory" :value="old('subcategory_id')"
+                    :options="['' => 'None']" />
+            </div>
 
             <div>
                 <label class="flex items-center gap-2 text-sm text-gray-700">
@@ -30,16 +44,12 @@
                  data-default-split='@json($defaultSplit)'
                  data-term-singular="{{ $resourceTermSingular }}">
                 <div class="allocation-row grid grid-cols-[1fr_120px_auto] items-end gap-3">
-                    <div>
-                        <x-helper.form.field.select name="allocations[0][resource_id]" :title="$resourceTermSingular" required
-                            :value="old('allocations.0.resource_id', $children[0]['id'])"
-                            :options="collect($children)->mapWithKeys(fn ($child) => [$child['id'] => $child['name']])"
-                            errorKey="allocations.0.resource_id" />
-                    </div>
-                    <div>
-                        <x-helper.form.field.number name="allocations[0][percentage]" title="Percentage" required min="1" max="100"
-                            :value="old('allocations.0.percentage', 100)" errorKey="allocations.0.percentage" />
-                    </div>
+                    <x-helper.form.field.select name="allocations[0][resource_id]" :title="$resourceTermSingular" required
+                        :value="old('allocations.0.resource_id', $children[0]['id'])"
+                        :options="collect($children)->mapWithKeys(fn ($child) => [$child['id'] => $child['name']])"
+                        errorKey="allocations.0.resource_id" />
+                    <x-helper.form.field.number name="allocations[0][percentage]" title="Percentage" required min="1" max="100"
+                        :value="old('allocations.0.percentage', 100)" errorKey="allocations.0.percentage" />
                     <button type="button" class="remove-allocation hidden pb-2 text-sm text-red-600 hover:underline">Remove</button>
                 </div>
             </div>

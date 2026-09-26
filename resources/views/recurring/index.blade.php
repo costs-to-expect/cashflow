@@ -27,7 +27,15 @@
                                 {{ $recurringExpense->allocations->map(fn ($a) => ($childrenById[$a->resource_id]['name'] ?? '?').' ('.$a->percentage.'%)')->implode(', ') }}
                             </td>
                             <td class="px-4 py-2 text-right text-gray-900">{{ $currenciesById[$recurringExpense->currency_id]['code'] ?? '' }} {{ $recurringExpense->total }}</td>
-                            <td class="px-4 py-2 text-gray-600">{{ $recurringExpense->active ? $recurringExpense->next_run_date->format('j M Y') : 'Paused' }}</td>
+                            <td class="px-4 py-2 text-gray-600">
+                                @if ($recurringExpense->active)
+                                    {{ $recurringExpense->next_run_date->format('j M Y') }}
+                                @elseif ($recurringExpense->ends_on && $recurringExpense->ends_on->isPast())
+                                    Ended {{ $recurringExpense->ends_on->format('j M Y') }}
+                                @else
+                                    Paused
+                                @endif
+                            </td>
                             <td class="px-4 py-2 text-right whitespace-nowrap">
                                 <a href="{{ route('recurring.edit', $recurringExpense) }}" class="text-indigo-600 hover:underline">Edit</a>
                                 <form method="POST" action="{{ route('recurring.toggle', $recurringExpense) }}" class="inline">
