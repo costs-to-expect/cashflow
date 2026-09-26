@@ -21,6 +21,14 @@ Homestead.yaml
 Homestead.json
 /.vagrant
 .phpunit.result.cache
+/.phpunit.cache
+
+/.fleet
+/.idea
+/.nova
+/.vscode
+/.zed
+database/database.sqlite
 
 /public/build
 /storage/pail
@@ -28,3 +36,8 @@ Homestead.json
 .env.production
 .phpactor.json
 auth.json
+
+# Tailwind standalone CLI binary - platform specific, downloaded not committed
+/bin/tailwindcss-*
+
+.docker/mysql/data
