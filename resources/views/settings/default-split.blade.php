@@ -37,6 +37,6 @@
             </div>
         </form>
 
-        <script src="{{ asset('js/default-split-form.js') }}" defer></script>
+        <script src="{{ asset('js/'.$version['js'].'/default-split-form.js') }}" defer></script>
     @endif
 </x-layouts.app>

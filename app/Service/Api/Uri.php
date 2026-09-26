@@ -108,6 +108,6 @@ class Uri
 
     private static function resourceTypeId(): string
     {
-        return (string) Config::get('api.resource_type_id');
+        return (string) Config::get('app.api.resource_type_id');
     }
 }

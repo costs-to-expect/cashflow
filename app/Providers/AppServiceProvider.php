@@ -29,8 +29,9 @@ class AppServiceProvider extends ServiceProvider
         });
 
         View::composer('*', function ($view) {
-            $view->with('resourceTermSingular', Setting::get('resource_term_singular', config('api.resource_term_singular')));
-            $view->with('resourceTermPlural', Setting::get('resource_term_plural', config('api.resource_term_plural')));
+            $view->with('resourceTermSingular', Setting::get('resource_term_singular', config('app.api.resource_term_singular')));
+            $view->with('resourceTermPlural', Setting::get('resource_term_plural', config('app.api.resource_term_plural')));
+            $view->with('version', config('app.version'));
         });
     }
 }

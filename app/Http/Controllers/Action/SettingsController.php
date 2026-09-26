@@ -10,6 +10,7 @@ use App\Actions\Category\UpdateCategory;
 use App\Actions\Category\UpdateSubcategory;
 use App\Actions\Settings\SaveDefaultSplit;
 use App\Http\Controllers\Controller;
+use App\Models\ReportingPeriod;
 use App\Models\Setting;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -102,5 +103,52 @@ class SettingsController extends Controller
         $result = $updateSubcategory($category_id, $subcategory_id, $name, $description);
 
         return $this->redirectForApiResult($result, 'settings.categories', [], "{$name} has been updated.");
+    }
+
+    public function storePeriod(Request $request): RedirectResponse
+    {
+        $validated = $request->validate($this->periodRules());
+
+        ReportingPeriod::create([
+            ...$validated,
+            'sort_order' => ReportingPeriod::query()->max('sort_order') + 1,
+        ]);
+
+        return redirect()->route('settings.periods')->with('status', "{$validated['name']} has been added.");
+    }
+
+    /**
+     * Every period has its own update form, all rendered at once - fields
+     * are named periods[{id}][field] so a failed submission's old()/error
+     * state can't bleed into other cards.
+     */
+    public function updatePeriod(Request $request, ReportingPeriod $reportingPeriod): RedirectResponse
+    {
+        $validated = $request->validate($this->periodRules("periods.{$reportingPeriod->id}."));
+
+        $data = $validated['periods'][$reportingPeriod->id];
+
+        $reportingPeriod->update($data);
+
+        return redirect()->route('settings.periods')->with('status', "{$data['name']} has been updated.");
+    }
+
+    public function destroyPeriod(ReportingPeriod $reportingPeriod): RedirectResponse
+    {
+        $name = $reportingPeriod->name;
+        $reportingPeriod->delete();
+
+        return redirect()->route('settings.periods')->with('status', "{$name} has been removed.");
+    }
+
+    private function periodRules(string $prefix = ''): array
+    {
+        return [
+            "{$prefix}name" => ['required', 'string', 'max:255'],
+            "{$prefix}start_month" => ['required', 'integer', 'min:1', 'max:12'],
+            "{$prefix}start_day" => ['required', 'integer', 'min:1', 'max:31'],
+            "{$prefix}end_month" => ['required', 'integer', 'min:1', 'max:12'],
+            "{$prefix}end_day" => ['required', 'integer', 'min:1', 'max:31'],
+        ];
     }
 }

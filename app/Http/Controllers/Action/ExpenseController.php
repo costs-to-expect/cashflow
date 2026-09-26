@@ -48,7 +48,7 @@ class ExpenseController extends Controller
             'children.show',
             ['resource_id' => $firstResourceId],
             count($validated['allocations']) > 1
-                ? "{$validated['name']} has been added and split across {$this->count($validated)} ".strtolower(config('api.resource_term_plural')).'.'
+                ? "{$validated['name']} has been added and split across {$this->count($validated)} ".strtolower(config('app.api.resource_term_plural')).'.'
                 : "{$validated['name']} has been added.",
         );
     }

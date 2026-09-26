@@ -17,5 +17,4 @@
             <option value="{{ $optionValue }}" @selected((string) old($errorKey, $value) === (string) $optionValue)>{{ $label }}</option>
         @endforeach
     </select>
-    <x-helper.form.error :name="$errorKey" />
 </div>

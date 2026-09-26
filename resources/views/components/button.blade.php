@@ -8,6 +8,6 @@
     };
 @endphp
 
-<button {{ $attributes->merge(['type' => 'submit', 'class' => "inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium shadow-sm $classes"]) }}>
+<button {{ $attributes->merge(['type' => 'submit', 'class' => "inline-flex h-10 items-center justify-center whitespace-nowrap rounded-md px-4 text-sm font-medium shadow-sm $classes"]) }}>
     {{ $slot }}
 </button>

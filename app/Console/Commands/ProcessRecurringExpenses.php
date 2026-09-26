@@ -19,7 +19,7 @@ class ProcessRecurringExpenses extends Command
 
     public function handle(): int
     {
-        $serviceToken = config('api.service_token');
+        $serviceToken = config('app.api.service_token');
 
         if (blank($serviceToken)) {
             $this->error('API_SERVICE_TOKEN is not configured, cannot post recurring expenses.');

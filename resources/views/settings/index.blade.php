@@ -16,5 +16,10 @@
             <p class="font-medium text-gray-900">Naming</p>
             <p class="mt-1 text-sm text-gray-600">What a "{{ strtolower($resourceTermSingular) }}" is called throughout the app.</p>
         </a>
+
+        <a href="{{ route('settings.periods') }}" class="block rounded-lg border border-gray-200 bg-white p-4 shadow-sm hover:border-indigo-300">
+            <p class="font-medium text-gray-900">Reporting periods</p>
+            <p class="mt-1 text-sm text-gray-600">Recurring date windows (e.g. a financial year) totalled on the dashboard.</p>
+        </a>
     </div>
 </x-layouts.app>

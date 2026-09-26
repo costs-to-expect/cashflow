@@ -30,7 +30,7 @@ class UserProvider implements UserProviderContract
             return null;
         }
 
-        if (! in_array(strtolower((string) $content['email']), config('api.allowed_emails'), true)) {
+        if (! in_array(strtolower((string) $content['email']), config('app.api.allowed_emails'), true)) {
             return null;
         }
 

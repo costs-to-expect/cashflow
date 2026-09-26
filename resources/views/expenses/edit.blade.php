@@ -35,6 +35,6 @@
         <x-button>Save changes</x-button>
     </form>
 
-    <script src="{{ asset('js/format-number.js') }}" defer></script>
-    <script src="{{ asset('js/expense-form.js') }}" defer></script>
+    <script src="{{ asset('js/'.$version['js'].'/format-number.js') }}" defer></script>
+    <script src="{{ asset('js/'.$version['js'].'/expense-form.js') }}" defer></script>
 </x-layouts.app>

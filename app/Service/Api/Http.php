@@ -19,7 +19,7 @@ class Http
 
     public function __construct(private readonly ?string $bearer = null)
     {
-        $client = HttpFacade::baseUrl(Config::get('api.base_url'))
+        $client = HttpFacade::baseUrl(Config::get('app.api.base_url'))
             ->acceptJson()
             ->asJson();
 

@@ -25,7 +25,7 @@ class Guard implements GuardContract
     {
         $email = strtolower(trim($email));
 
-        if (! in_array($email, config('api.allowed_emails'), true)) {
+        if (! in_array($email, config('app.api.allowed_emails'), true)) {
             $this->errors = ['email' => ['Those credentials are not recognised.']];
 
             return false;
@@ -43,8 +43,8 @@ class Guard implements GuardContract
 
         $lifetime = 60 * 24 * 30;
 
-        Cookie::queue(config('api.cookie_bearer'), (string) $response['content']['token'], $lifetime);
-        Cookie::queue(config('api.cookie_user'), (string) $response['content']['id'], $lifetime);
+        Cookie::queue(config('app.api.cookie_bearer'), (string) $response['content']['token'], $lifetime);
+        Cookie::queue(config('app.api.cookie_user'), (string) $response['content']['id'], $lifetime);
 
         return true;
     }
@@ -70,7 +70,7 @@ class Guard implements GuardContract
             return $this->user;
         }
 
-        $userId = $this->request->cookie(config('api.cookie_user'));
+        $userId = $this->request->cookie(config('app.api.cookie_user'));
 
         if ($userId === null) {
             return null;
@@ -105,8 +105,8 @@ class Guard implements GuardContract
 
     public function logout(): void
     {
-        Cookie::queue(Cookie::forget(config('api.cookie_bearer')));
-        Cookie::queue(Cookie::forget(config('api.cookie_user')));
+        Cookie::queue(Cookie::forget(config('app.api.cookie_bearer')));
+        Cookie::queue(Cookie::forget(config('app.api.cookie_user')));
 
         $this->user = null;
     }

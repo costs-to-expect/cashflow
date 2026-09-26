@@ -52,7 +52,7 @@ class ApiService
         return $this->http->post(Uri::resources(), [
             'name' => $name,
             'description' => $description,
-            'item_subtype_id' => config('api.item_subtype_id'),
+            'item_subtype_id' => config('app.api.item_subtype_id'),
         ]);
     }
 

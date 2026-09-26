@@ -53,4 +53,9 @@ Route::middleware('auth')->group(function () {
     Route::post('/settings/categories/{category_id}/update', [SettingsAction::class, 'updateCategory'])->name('settings.categories.update');
     Route::post('/settings/categories/{category_id}/subcategories', [SettingsAction::class, 'storeSubcategory'])->name('settings.categories.subcategories.store');
     Route::post('/settings/categories/{category_id}/subcategories/{subcategory_id}/update', [SettingsAction::class, 'updateSubcategory'])->name('settings.categories.subcategories.update');
+
+    Route::get('/settings/periods', [SettingsView::class, 'periods'])->name('settings.periods');
+    Route::post('/settings/periods', [SettingsAction::class, 'storePeriod'])->name('settings.periods.store');
+    Route::post('/settings/periods/{reportingPeriod}/update', [SettingsAction::class, 'updatePeriod'])->name('settings.periods.update');
+    Route::post('/settings/periods/{reportingPeriod}/delete', [SettingsAction::class, 'destroyPeriod'])->name('settings.periods.delete');
 });

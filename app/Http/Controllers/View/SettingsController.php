@@ -6,6 +6,7 @@ namespace App\Http\Controllers\View;
 
 use App\Http\Controllers\Controller;
 use App\Models\DefaultSplitAllocation;
+use App\Models\ReportingPeriod;
 use App\Models\Setting;
 use App\Service\Api\ApiService;
 use Illuminate\View\View;
@@ -32,8 +33,8 @@ class SettingsController extends Controller
     public function resourceNaming(): View
     {
         return view('settings.resource-naming', [
-            'singular' => Setting::get('resource_term_singular', config('api.resource_term_singular')),
-            'plural' => Setting::get('resource_term_plural', config('api.resource_term_plural')),
+            'singular' => Setting::get('resource_term_singular', config('app.api.resource_term_singular')),
+            'plural' => Setting::get('resource_term_plural', config('app.api.resource_term_plural')),
         ]);
     }
 
@@ -51,6 +52,13 @@ class SettingsController extends Controller
 
         return view('settings.categories', [
             'categories' => $categories,
+        ]);
+    }
+
+    public function periods(): View
+    {
+        return view('settings.periods', [
+            'periods' => ReportingPeriod::query()->orderBy('sort_order')->get(),
         ]);
     }
 }

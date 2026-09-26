@@ -22,6 +22,19 @@
                         <a href="{{ route('children.show', $child['id']) }}" class="text-xs text-indigo-600 hover:underline">View all</a>
                     </div>
 
+                    @php($periodTotals = $periodTotalsByChild[$child['id']] ?? [])
+
+                    @if (count($periodTotals) > 0)
+                        <div class="mb-3 space-y-1 border-b border-gray-100 pb-3">
+                            @foreach ($periodTotals as $entry)
+                                <p class="flex items-center justify-between text-xs">
+                                    <span class="text-gray-500">{{ $entry['name'] }}</span>
+                                    <span class="font-medium text-gray-900">{{ $entry['currency'] }} {{ $entry['total'] }}</span>
+                                </p>
+                            @endforeach
+                        </div>
+                    @endif
+
                     @php($recent = $recentByChild[$child['id']] ?? [])
 
                     @if (count($recent) === 0)

@@ -34,8 +34,13 @@ if [ "${1:-}" = "--watch" ]; then
     WATCH_FLAG="--watch"
 fi
 
+# Output path is versioned (see config/app/version.php's "css" key) so a
+# deployed app can be updated without stale cached CSS being served.
+CSS_VERSION="$(php -r "echo (require '${ROOT_DIR}/config/app/version.php')['css'];")"
+mkdir -p "${ROOT_DIR}/public/css/${CSS_VERSION}"
+
 "$BINARY_PATH" \
     -i "${ROOT_DIR}/resources/css/app.css" \
-    -o "${ROOT_DIR}/public/css/app.css" \
+    -o "${ROOT_DIR}/public/css/${CSS_VERSION}/app.css" \
     --minify \
     $WATCH_FLAG

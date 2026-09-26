@@ -33,6 +33,10 @@ abstract class Controller
             $bag = new MessageBag;
 
             foreach ($result->fieldErrors as $field => $messages) {
+                // The API nests each field's messages under an "errors" key
+                // (e.g. {"name": {"errors": ["..."]}}) rather than a flat list.
+                $messages = $messages['errors'] ?? $messages;
+
                 foreach ((array) $messages as $message) {
                     $bag->add($field, $message);
                 }
@@ -69,6 +73,6 @@ abstract class Controller
      */
     protected function resolveDefaultCurrencyId(array $sortedCurrencies): ?string
     {
-        return config('api.default_currency_id') ?: ($sortedCurrencies[0]['id'] ?? null);
+        return config('app.api.default_currency_id') ?: ($sortedCurrencies[0]['id'] ?? null);
     }
 }
