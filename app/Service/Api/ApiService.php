@@ -86,6 +86,18 @@ class ApiService
         return $this->http->get(Uri::itemsSummary($resourceId, $query));
     }
 
+    /**
+     * itemsSummary(), aggregated across every resource under the resource
+     * type at once - for a resource-type-wide total (e.g. all children's
+     * expenses combined) rather than one child's.
+     *
+     * @param  array<string, mixed>  $query
+     */
+    public function resourceTypeItemsSummary(array $query = []): array
+    {
+        return $this->http->get(Uri::resourceTypeItemsSummary($query));
+    }
+
     public function item(string $resourceId, string $itemId): array
     {
         return $this->http->get(Uri::item($resourceId, $itemId));

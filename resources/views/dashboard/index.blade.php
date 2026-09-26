@@ -14,6 +14,18 @@
     @elseif (count($children) === 0)
         <p class="text-sm text-gray-600">No {{ strtolower($resourceTermPlural) }} set up yet. <a href="{{ route('children.create') }}" class="text-indigo-600 hover:underline">Add one</a> to get started.</p>
     @else
+        <div class="mb-6 rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
+            <p class="mb-3 text-sm font-semibold text-gray-900">
+                {{ count($children) }} {{ count($children) === 1 ? $resourceTermSingular : $resourceTermPlural }}
+            </p>
+
+            @if (count($overallPeriodTotals) > 0)
+                <div class="grid gap-4 sm:grid-cols-2">
+                    <x-dashboard.period-totals :periods="$overallPeriodTotals" />
+                </div>
+            @endif
+        </div>
+
         <div class="grid gap-6 sm:grid-cols-2">
             @foreach ($children as $child)
                 <div class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
@@ -26,23 +38,7 @@
 
                     @if (count($periodTotals) > 0)
                         <div class="mb-4 space-y-3 border-b border-gray-100 pb-4">
-                            @foreach ($periodTotals as $entry)
-                                <div>
-                                    <div class="flex items-start justify-between">
-                                        <span class="text-sm font-medium text-gray-700">{{ $entry['name'] }}</span>
-                                        <span class="text-right">
-                                            @forelse ($entry['totals'] as $currencyTotal)
-                                                <span class="block text-base font-semibold text-gray-900">{{ $currencyTotal['currency'] }} {{ $currencyTotal['total'] }}</span>
-                                            @empty
-                                                <span class="block text-base font-semibold text-gray-900">GBP 0.00</span>
-                                            @endforelse
-                                        </span>
-                                    </div>
-                                    <p class="text-xs text-gray-400">
-                                        {{ $entry['starts_on']->format('F jS Y') }} &rarr; {{ $entry['ends_on']->format('F jS Y') }} (current period)
-                                    </p>
-                                </div>
-                            @endforeach
+                            <x-dashboard.period-totals :periods="$periodTotals" />
                         </div>
                     @endif
 

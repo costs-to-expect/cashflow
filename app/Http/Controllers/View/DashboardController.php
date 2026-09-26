@@ -27,22 +27,32 @@ class DashboardController extends Controller
             $items = $this->api->items($child['id'], ['sort' => 'effective_date:desc', 'limit' => 5, 'include-categories' => 'true', 'include-subcategories' => 'true']);
             $recentByChild[$child['id']] = $items['status'] === 200 ? $items['content'] : [];
 
-            $periodTotalsByChild[$child['id']] = $periods->map(fn (ReportingPeriod $period) => $this->periodTotal($child['id'], $period))->all();
+            $periodTotalsByChild[$child['id']] = $periods->map(
+                fn (ReportingPeriod $period) => $this->periodTotal($period, fn (array $query) => $this->api->itemsSummary($child['id'], $query))
+            )->all();
         }
+
+        $overallPeriodTotals = $periods->map(
+            fn (ReportingPeriod $period) => $this->periodTotal($period, fn (array $query) => $this->api->resourceTypeItemsSummary($query))
+        )->all();
 
         return view('dashboard.index', [
             'children' => $children,
             'recentByChild' => $recentByChild,
             'periodTotalsByChild' => $periodTotalsByChild,
+            'overallPeriodTotals' => $overallPeriodTotals,
             'apiError' => $resources['status'] !== 200,
         ]);
     }
 
-    private function periodTotal(string $resourceId, ReportingPeriod $period): array
+    /**
+     * @param  callable(array<string, mixed>): array  $fetchSummary
+     */
+    private function periodTotal(ReportingPeriod $period, callable $fetchSummary): array
     {
         [$start, $end] = $period->currentWindow();
 
-        $summary = $this->api->itemsSummary($resourceId, [
+        $summary = $fetchSummary([
             'filter' => 'effective_date:'.$start->toDateString().':'.$end->toDateString(),
         ]);
 
