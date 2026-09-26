@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Service\Api;
 
 use Illuminate\Http\Client\PendingRequest;
+use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Http as HttpFacade;
 
@@ -17,6 +18,14 @@ class Http
 {
     private PendingRequest $client;
 
+    /**
+     * Every request made during this process's lifetime, for the
+     * "API requests" transparency panel (see components/layout/requests).
+     *
+     * @var array<int, array{method: string, uri: string, status: int, time: int, shape: string}>
+     */
+    private static array $requests = [];
+
     public function __construct(private readonly ?string $bearer = null)
     {
         $client = HttpFacade::baseUrl(Config::get('app.api.base_url'))
@@ -28,19 +37,40 @@ class Http
             : $client;
     }
 
+    /**
+     * @return array<int, array{method: string, uri: string, status: int, time: int, shape: string}>
+     */
+    public static function requests(): array
+    {
+        return self::$requests;
+    }
+
     public function get(string $uri): array
     {
-        return $this->respond($this->client->get($uri));
+        $start = microtime(true);
+
+        return $this->respond($this->client->get($uri), 'GET', $uri, $start);
     }
 
     public function post(string $uri, array $payload = []): array
     {
-        return $this->respond($this->client->post($uri, $this->withoutNulls($payload)));
+        $start = microtime(true);
+
+        return $this->respond($this->client->post($uri, $this->withoutNulls($payload)), 'POST', $uri, $start);
     }
 
     public function patch(string $uri, array $payload = []): array
     {
-        return $this->respond($this->client->patch($uri, $this->withoutNulls($payload)));
+        $start = microtime(true);
+
+        return $this->respond($this->client->patch($uri, $this->withoutNulls($payload)), 'PATCH', $uri, $start);
+    }
+
+    public function delete(string $uri): array
+    {
+        $start = microtime(true);
+
+        return $this->respond($this->client->delete($uri), 'DELETE', $uri, $start);
     }
 
     /**
@@ -54,17 +84,35 @@ class Http
         return array_filter($payload, static fn ($value) => $value !== null);
     }
 
-    public function delete(string $uri): array
+    private function respond(Response $response, string $method, string $uri, float $start): array
     {
-        return $this->respond($this->client->delete($uri));
-    }
+        $content = $response->json();
 
-    private function respond(\Illuminate\Http\Client\Response $response): array
-    {
+        self::$requests[] = [
+            'method' => $method,
+            'uri' => $uri,
+            'status' => $response->status(),
+            'time' => (int) round((microtime(true) - $start) * 1000),
+            'shape' => $this->describeShape($content),
+        ];
+
         return [
             'status' => $response->status(),
-            'content' => $response->json(),
+            'content' => $content,
             'fields' => $response->json('fields') ?? [],
         ];
+    }
+
+    private function describeShape(mixed $content): string
+    {
+        if (is_array($content) && array_is_list($content)) {
+            return count($content).' item'.(count($content) === 1 ? '' : 's');
+        }
+
+        if (is_array($content)) {
+            return 'object';
+        }
+
+        return 'empty';
     }
 }

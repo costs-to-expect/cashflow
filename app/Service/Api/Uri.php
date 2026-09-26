@@ -56,6 +56,28 @@ class Uri
         return '/'.self::VERSION.'/resource-types/'.self::resourceTypeId().'/resources/'.$resourceId.'/items/'.$itemId;
     }
 
+    /**
+     * Server-side aggregation (count/subtotal per currency) rather than the
+     * plain items collection - the API's "collection=true" override does
+     * not apply to the items endpoint, so summing a date range client-side
+     * would otherwise mean paging through every matching item.
+     *
+     * Known issue (API ticket filed): the filtered form of this endpoint
+     * returns an empty result for items created moments earlier on a brand
+     * new resource - suspected to be a scheduler/cache-population job not
+     * running locally. Works correctly on established data.
+     */
+    public static function itemsSummary(string $resourceId, array $query = []): string
+    {
+        $uri = '/'.self::VERSION.'/summary/resource-types/'.self::resourceTypeId().'/resources/'.$resourceId.'/items';
+
+        if ($query !== []) {
+            $uri .= '?'.http_build_query($query);
+        }
+
+        return $uri;
+    }
+
     public static function categories(): string
     {
         return self::categoriesBase().'?collection=true';

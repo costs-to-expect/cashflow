@@ -42,25 +42,25 @@ class DashboardController extends Controller
     {
         [$start, $end] = $period->currentWindow();
 
-        $items = $this->api->items($resourceId, [
-            'collection' => 'true',
+        $summary = $this->api->itemsSummary($resourceId, [
             'filter' => 'effective_date:'.$start->toDateString().':'.$end->toDateString(),
         ]);
 
-        $total = 0.0;
-        $currencyCode = null;
-
-        if ($items['status'] === 200) {
-            foreach ($items['content'] as $item) {
-                $total += (float) $item['actualised_total'];
-                $currencyCode ??= $item['currency']['code'];
-            }
-        }
+        // One row per currency present in the range - almost always just
+        // GBP, but a family could easily have the odd USD/EUR expense from
+        // a trip, and those must never be silently added into GBP's total.
+        $totals = $summary['status'] === 200
+            ? collect($summary['content'])->map(fn (array $row) => [
+                'currency' => $row['currency']['code'],
+                'total' => $row['subtotal'],
+            ])->all()
+            : [];
 
         return [
             'name' => $period->name,
-            'total' => number_format($total, 2, '.', ''),
-            'currency' => $currencyCode ?? 'GBP',
+            'totals' => $totals,
+            'starts_on' => $start,
+            'ends_on' => $end,
         ];
     }
 }
