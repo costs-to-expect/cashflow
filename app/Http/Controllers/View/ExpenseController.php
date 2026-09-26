@@ -16,20 +16,20 @@ class ExpenseController extends Controller
 
     public function create(Request $request): View
     {
-        $children = $this->children();
+        $resources = $this->resources();
         $currencies = $this->sortCurrenciesGbpFirst($this->currencies());
         $categories = $this->categories();
 
         return view('expenses.create', [
-            'children' => $children,
+            'resources' => $resources,
             'currencies' => $currencies,
             'defaultCurrencyId' => $this->resolveDefaultCurrencyId($currencies),
             'categories' => $categories,
             'subcategoriesByCategory' => $this->subcategoriesByCategory($categories),
             'preselectedResourceId' => $request->query('resource_id'),
-            'defaultAllocations' => $this->defaultAllocationsFor($children, $request->boolean('split')),
+            'defaultAllocations' => $this->defaultAllocationsFor($resources, $request->boolean('split')),
             'defaultSplit' => $this->defaultSplitAllocations(),
-            'nameSuggestions' => $this->nameSuggestions($children),
+            'nameSuggestions' => $this->nameSuggestions($resources),
         ]);
     }
 
@@ -41,31 +41,31 @@ class ExpenseController extends Controller
 
         [$currentCategoryId, $currentSubcategoryId] = $this->currentCategorisation($resource_id, $item_id);
 
-        $children = $this->children();
+        $resources = $this->resources();
         $categories = $this->categories();
 
         return view('expenses.edit', [
             'resourceId' => $resource_id,
             'item' => $item['content'],
-            'children' => $children,
+            'resources' => $resources,
             'currencies' => $this->sortCurrenciesGbpFirst($this->currencies()),
             'categories' => $categories,
             'subcategoriesByCategory' => $this->subcategoriesByCategory($categories),
             'currentCategoryId' => $currentCategoryId,
             'currentSubcategoryId' => $currentSubcategoryId,
-            'nameSuggestions' => $this->nameSuggestions($children),
+            'nameSuggestions' => $this->nameSuggestions($resources),
         ]);
     }
 
     /**
      * Distinct names from recent expenses, for the "name" field's datalist.
      */
-    private function nameSuggestions(array $children): array
+    private function nameSuggestions(array $resources): array
     {
         $names = [];
 
-        foreach ($children as $child) {
-            $items = $this->api->items($child['id'], ['limit' => 100, 'sort' => 'effective_date:desc']);
+        foreach ($resources as $resource) {
+            $items = $this->api->items($resource['id'], ['limit' => 100, 'sort' => 'effective_date:desc']);
 
             if ($items['status'] === 200) {
                 foreach ($items['content'] as $item) {
@@ -80,7 +80,7 @@ class ExpenseController extends Controller
         return array_slice($names, 0, 150);
     }
 
-    private function children(): array
+    private function resources(): array
     {
         $resources = $this->api->resources();
 
@@ -141,13 +141,13 @@ class ExpenseController extends Controller
         return DefaultSplitAllocation::query()->orderBy('sort_order')->get(['resource_id', 'percentage'])->toArray();
     }
 
-    private function defaultAllocationsFor(array $children, bool $forceSplit): ?array
+    private function defaultAllocationsFor(array $resources, bool $forceSplit): ?array
     {
         if (! $forceSplit || old('allocations') !== null) {
             return null;
         }
 
-        $validResourceIds = collect($children)->pluck('id')->all();
+        $validResourceIds = collect($resources)->pluck('id')->all();
 
         $filtered = collect($this->defaultSplitAllocations())
             ->filter(fn ($allocation) => in_array($allocation['resource_id'], $validResourceIds, true))
@@ -158,10 +158,10 @@ class ExpenseController extends Controller
             return $filtered;
         }
 
-        if (count($children) >= 2) {
+        if (count($resources) >= 2) {
             return [
-                ['resource_id' => $children[0]['id'], 'percentage' => 50],
-                ['resource_id' => $children[1]['id'], 'percentage' => 50],
+                ['resource_id' => $resources[0]['id'], 'percentage' => 50],
+                ['resource_id' => $resources[1]['id'], 'percentage' => 50],
             ];
         }
 

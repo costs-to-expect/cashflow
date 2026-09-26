@@ -45,7 +45,7 @@ class ExpenseController extends Controller
 
         return $this->redirectForApiResult(
             $result,
-            'children.show',
+            'resources.show',
             ['resource_id' => $firstResourceId],
             count($validated['allocations']) > 1
                 ? "{$validated['name']} has been added and split across {$this->count($validated)} ".strtolower(config('app.api.resource_term_plural')).'.'
@@ -73,7 +73,7 @@ class ExpenseController extends Controller
 
         return $this->redirectForApiResult(
             $result,
-            'children.show',
+            'resources.show',
             ['resource_id' => $resource_id],
             "{$validated['name']} has been updated.",
         );
@@ -83,7 +83,7 @@ class ExpenseController extends Controller
     {
         $result = $deleteExpense($resource_id, $item_id);
 
-        return $this->redirectForApiResult($result, 'children.show', ['resource_id' => $resource_id], 'The expense has been deleted.');
+        return $this->redirectForApiResult($result, 'resources.show', ['resource_id' => $resource_id], 'The expense has been deleted.');
     }
 
     private function count(array $validated): int

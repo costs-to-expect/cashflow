@@ -1,11 +1,11 @@
-<x-layouts.app :title="$child['name']">
+<x-layouts.app :title="$resource['name']">
     <div class="mb-6 flex items-center justify-between">
         <div>
-            <h1 class="text-lg font-semibold text-gray-900">{{ $child['name'] }}</h1>
-            <p class="text-sm text-gray-500">{{ $child['description'] }}</p>
+            <h1 class="text-lg font-semibold text-gray-900">{{ $resource['name'] }}</h1>
+            <p class="text-sm text-gray-500">{{ $resource['description'] }}</p>
         </div>
         <div class="flex gap-2">
-            <a href="{{ route('expenses.create', ['resource_id' => $child['id']]) }}"><x-button>Add Expense for {{ $child['name'] }}</x-button></a>
+            <a href="{{ route('expenses.create', ['resource_id' => $resource['id']]) }}"><x-button>Add Expense for {{ $resource['name'] }}</x-button></a>
             <a href="{{ route('recurring.index') }}"><x-button variant="secondary">Recurring</x-button></a>
         </div>
     </div>
@@ -48,8 +48,8 @@
                                 @endif
                             </td>
                             <td class="px-4 py-2 text-right whitespace-nowrap">
-                                <a href="{{ route('expenses.edit', ['resource_id' => $child['id'], 'item_id' => $item['id']]) }}" class="text-indigo-600 hover:underline">Edit</a>
-                                <form method="POST" action="{{ route('expenses.delete', ['resource_id' => $child['id'], 'item_id' => $item['id']]) }}" class="inline" onsubmit="return confirm('Delete this expense?');">
+                                <a href="{{ route('expenses.edit', ['resource_id' => $resource['id'], 'item_id' => $item['id']]) }}" class="text-indigo-600 hover:underline">Edit</a>
+                                <form method="POST" action="{{ route('expenses.delete', ['resource_id' => $resource['id'], 'item_id' => $item['id']]) }}" class="inline" onsubmit="return confirm('Delete this expense?');">
                                     @csrf
                                     <button type="submit" class="ml-3 text-red-600 hover:underline">Delete</button>
                                 </form>
@@ -62,13 +62,13 @@
 
         <div class="mt-4 flex justify-between text-sm">
             @if ($page > 1)
-                <a href="{{ route('children.show', ['resource_id' => $child['id'], 'page' => $page - 1]) }}" class="text-indigo-600 hover:underline">&larr; Newer</a>
+                <a href="{{ route('resources.show', ['resource_id' => $resource['id'], 'page' => $page - 1]) }}" class="text-indigo-600 hover:underline">&larr; Newer</a>
             @else
                 <span></span>
             @endif
 
             @if ($hasMore)
-                <a href="{{ route('children.show', ['resource_id' => $child['id'], 'page' => $page + 1]) }}" class="text-indigo-600 hover:underline">Older &rarr;</a>
+                <a href="{{ route('resources.show', ['resource_id' => $resource['id'], 'page' => $page + 1]) }}" class="text-indigo-600 hover:underline">Older &rarr;</a>
             @endif
         </div>
     @endif

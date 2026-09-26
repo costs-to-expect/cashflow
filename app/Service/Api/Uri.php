@@ -80,8 +80,8 @@ class Uri
 
     /**
      * Same aggregation as itemsSummary(), but across every resource under
-     * the resource type at once (e.g. every child's expenses combined) -
-     * for a resource-type-wide total rather than one child's.
+     * the resource type at once (e.g. every resource's expenses combined) -
+     * for a resource-type-wide total rather than one resource's.
      */
     public static function resourceTypeItemsSummary(array $query = []): string
     {

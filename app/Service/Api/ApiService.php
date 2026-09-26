@@ -88,8 +88,8 @@ class ApiService
 
     /**
      * itemsSummary(), aggregated across every resource under the resource
-     * type at once - for a resource-type-wide total (e.g. all children's
-     * expenses combined) rather than one child's.
+     * type at once - for a resource-type-wide total (e.g. every resource's
+     * expenses combined) rather than one resource's.
      *
      * @param  array<string, mixed>  $query
      */

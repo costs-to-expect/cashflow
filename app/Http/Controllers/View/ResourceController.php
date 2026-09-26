@@ -15,14 +15,14 @@ class ResourceController extends Controller
 
     public function create(): View
     {
-        return view('children.create');
+        return view('resources.create');
     }
 
     public function show(Request $request, string $resource_id): View
     {
         $resource = $this->api->resource($resource_id);
 
-        abort_if($resource['status'] !== 200, 404, 'That child could not be found.');
+        abort_if($resource['status'] !== 200, 404, 'That resource could not be found.');
 
         $page = max(1, (int) $request->query('page', 1));
         $perPage = 25;
@@ -35,8 +35,8 @@ class ResourceController extends Controller
             'include-subcategories' => 'true',
         ]);
 
-        return view('children.show', [
-            'child' => $resource['content'],
+        return view('resources.show', [
+            'resource' => $resource['content'],
             'items' => $items['status'] === 200 ? $items['content'] : [],
             'page' => $page,
             'hasMore' => $items['status'] === 200 && count($items['content']) === $perPage,

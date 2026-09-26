@@ -22,10 +22,10 @@ class SettingsController extends Controller
 
     public function defaultSplit(): View
     {
-        $resources = $this->api->resources();
+        $response = $this->api->resources();
 
         return view('settings.default-split', [
-            'children' => $resources['status'] === 200 ? $resources['content'] : [],
+            'resources' => $response['status'] === 200 ? $response['content'] : [],
             'allocations' => DefaultSplitAllocation::query()->orderBy('sort_order')->get(['resource_id', 'percentage'])->toArray(),
         ]);
     }

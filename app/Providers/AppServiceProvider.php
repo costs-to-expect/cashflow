@@ -18,14 +18,14 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         View::composer('components.layouts.app', function ($view) {
-            $children = [];
+            $resources = [];
 
             if (Auth::check()) {
                 $response = app(ApiService::class)->resources();
-                $children = $response['status'] === 200 ? $response['content'] : [];
+                $resources = $response['status'] === 200 ? $response['content'] : [];
             }
 
-            $view->with('navChildren', $children);
+            $view->with('navResources', $resources);
         });
 
         View::composer('*', function ($view) {

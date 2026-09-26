@@ -42,13 +42,13 @@
         </div>
 
         <div id="allocations" class="space-y-3"
-             data-children='@json(collect($children)->map(fn ($child) => ['id' => $child['id'], 'name' => $child['name']]))'
+             data-resources='@json(collect($resources)->map(fn ($resource) => ['id' => $resource['id'], 'name' => $resource['name']]))'
              data-term-singular="{{ $resourceTermSingular }}">
             @foreach ($oldAllocations as $index => $allocation)
                 <div class="allocation-row grid grid-cols-[1fr_120px_auto] items-end gap-3">
                     <x-helper.form.field.select :name="'allocations['.$index.'][resource_id]'" :title="$resourceTermSingular" required
                         :value="$allocation['resource_id']"
-                        :options="collect($children)->mapWithKeys(fn ($child) => [$child['id'] => $child['name']])"
+                        :options="collect($resources)->mapWithKeys(fn ($resource) => [$resource['id'] => $resource['name']])"
                         :errorKey="'allocations.'.$index.'.resource_id'" />
                     <x-helper.form.field.number :name="'allocations['.$index.'][percentage]'" title="Percentage" required min="1" max="100"
                         :value="$allocation['percentage']" :errorKey="'allocations.'.$index.'.percentage'" />

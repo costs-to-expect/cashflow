@@ -2,8 +2,8 @@
     <h1 class="mb-2 text-lg font-semibold text-gray-900">Add monthly recurring expense</h1>
     <p class="mb-6 text-sm text-gray-600">This expense is created automatically every month, between the start and (optional) end date below.</p>
 
-    @if (count($children) === 0)
-        <p class="text-sm text-gray-600">You need to <a href="{{ route('children.create') }}" class="text-indigo-600 hover:underline">add a {{ strtolower($resourceTermSingular) }}</a> first.</p>
+    @if (count($resources) === 0)
+        <p class="text-sm text-gray-600">You need to <a href="{{ route('resources.create') }}" class="text-indigo-600 hover:underline">add a {{ strtolower($resourceTermSingular) }}</a> first.</p>
     @else
         <form method="POST" action="{{ route('recurring.store') }}" class="max-w-xl space-y-4 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
             @csrf
@@ -40,13 +40,13 @@
             </div>
 
             <div id="allocations" class="space-y-3"
-                 data-children='@json(collect($children)->map(fn ($child) => ['id' => $child['id'], 'name' => $child['name']]))'
+                 data-resources='@json(collect($resources)->map(fn ($resource) => ['id' => $resource['id'], 'name' => $resource['name']]))'
                  data-default-split='@json($defaultSplit)'
                  data-term-singular="{{ $resourceTermSingular }}">
                 <div class="allocation-row grid grid-cols-[1fr_120px_auto] items-end gap-3">
                     <x-helper.form.field.select name="allocations[0][resource_id]" :title="$resourceTermSingular" required
-                        :value="old('allocations.0.resource_id', $children[0]['id'])"
-                        :options="collect($children)->mapWithKeys(fn ($child) => [$child['id'] => $child['name']])"
+                        :value="old('allocations.0.resource_id', $resources[0]['id'])"
+                        :options="collect($resources)->mapWithKeys(fn ($resource) => [$resource['id'] => $resource['name']])"
                         errorKey="allocations.0.resource_id" />
                     <x-helper.form.field.number name="allocations[0][percentage]" title="Percentage" required min="1" max="100"
                         :value="old('allocations.0.percentage', 100)" errorKey="allocations.0.percentage" />

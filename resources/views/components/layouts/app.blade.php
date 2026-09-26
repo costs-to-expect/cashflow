@@ -17,10 +17,10 @@
                 <a href="{{ route('dashboard') }}" class="text-base font-semibold text-white">{{ config('app.name') }}</a>
 
                 <div class="hidden gap-4 sm:flex">
-                    @foreach ($navChildren as $navChild)
-                        <a href="{{ route('children.show', $navChild['id']) }}"
-                           class="text-sm text-white/70 hover:text-white {{ request()->route('resource_id') === $navChild['id'] ? 'font-semibold text-white' : '' }}">
-                            {{ $navChild['name'] }}
+                    @foreach ($navResources as $navResource)
+                        <a href="{{ route('resources.show', $navResource['id']) }}"
+                           class="text-sm text-white/70 hover:text-white {{ request()->route('resource_id') === $navResource['id'] ? 'font-semibold text-white' : '' }}">
+                            {{ $navResource['name'] }}
                         </a>
                     @endforeach
 
@@ -45,9 +45,9 @@
 
         <div id="mobile-menu" class="hidden border-t border-brand-600 sm:hidden">
             <div class="space-y-1 px-4 py-3">
-                @foreach ($navChildren as $navChild)
-                    <a href="{{ route('children.show', $navChild['id']) }}" class="block py-1 text-sm text-white/70 {{ request()->route('resource_id') === $navChild['id'] ? 'font-semibold text-white' : '' }}">
-                        {{ $navChild['name'] }}
+                @foreach ($navResources as $navResource)
+                    <a href="{{ route('resources.show', $navResource['id']) }}" class="block py-1 text-sm text-white/70 {{ request()->route('resource_id') === $navResource['id'] ? 'font-semibold text-white' : '' }}">
+                        {{ $navResource['name'] }}
                     </a>
                 @endforeach
 

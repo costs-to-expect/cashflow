@@ -26,16 +26,16 @@ class ResourceController extends Controller
         if ($response['status'] === 201) {
             return $this->redirectForApiResult(
                 ApiActionResult::success(),
-                'children.show',
+                'resources.show',
                 ['resource_id' => $response['content']['id']],
                 "{$response['content']['name']} has been added.",
             );
         }
 
         if ($response['status'] === 422) {
-            return $this->redirectForApiResult(ApiActionResult::validationFailed($response['fields']), 'children.create');
+            return $this->redirectForApiResult(ApiActionResult::validationFailed($response['fields']), 'resources.create');
         }
 
-        return $this->redirectForApiResult(ApiActionResult::failed('Unexpected status '.$response['status']), 'children.create');
+        return $this->redirectForApiResult(ApiActionResult::failed('Unexpected status '.$response['status']), 'resources.create');
     }
 }

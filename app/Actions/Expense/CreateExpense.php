@@ -10,14 +10,14 @@ use App\Service\Api\ApiService;
 /**
  * Creates an allocated-expense item for every allocation given. A plain
  * (non-split) expense is just a single allocation at 100%. A split expense
- * is one row per child - each gets its own item on the API sharing the same
- * name/description/date/total, differing only in its percentage share.
+ * is one row per resource - each gets its own item on the API sharing the
+ * same name/description/date/total, differing only in its percentage share.
  *
  * We verified against a real (throwaway) resource type on the local dev API
  * that the API's own partial-transfer endpoint does *not* make a shared
  * expense show up in the receiving resource's own item list or summary, so
- * it isn't used here - one item per child is the only way both children's
- * lists/totals actually reflect their share.
+ * it isn't used here - one item per resource is the only way every
+ * resource's lists/totals actually reflect its share.
  */
 class CreateExpense
 {

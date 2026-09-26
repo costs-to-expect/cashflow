@@ -5,8 +5,8 @@
     }
 
     var addButton = document.getElementById('add-default-split-allocation');
-    var children = JSON.parse(container.dataset.children || '[]');
-    var termSingular = container.dataset.termSingular || 'Child';
+    var resources = JSON.parse(container.dataset.resources || '[]');
+    var termSingular = container.dataset.termSingular || 'Resource';
 
     function rows() {
         return Array.from(container.querySelectorAll('.allocation-row'));
@@ -26,13 +26,13 @@
         var usedIds = rows().map(function (row) {
             return row.querySelector('select').value;
         });
-        var nextChild = children.find(function (child) {
-            return usedIds.indexOf(child.id) === -1;
-        }) || children[0];
+        var nextResource = resources.find(function (resource) {
+            return usedIds.indexOf(resource.id) === -1;
+        }) || resources[0];
 
-        var options = children.map(function (child) {
-            var selected = child.id === nextChild.id ? ' selected' : '';
-            return '<option value="' + child.id + '"' + selected + '>' + child.name + '</option>';
+        var options = resources.map(function (resource) {
+            var selected = resource.id === nextResource.id ? ' selected' : '';
+            return '<option value="' + resource.id + '"' + selected + '>' + resource.name + '</option>';
         }).join('');
 
         var row = document.createElement('div');

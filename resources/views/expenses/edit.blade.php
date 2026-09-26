@@ -21,7 +21,7 @@
 
         <div class="grid grid-cols-2 gap-4">
             <x-helper.form.field.number name="total" title="Total amount" required min="0" step="0.01" :value="old('total', $item['total'])" data-format="number" data-points="2" />
-            <x-helper.form.field.number name="percentage" title="Percentage for this child" required min="1" max="100" :value="old('percentage', $item['percentage'])" />
+            <x-helper.form.field.number name="percentage" :title="'Percentage for this '.strtolower($resourceTermSingular)" required min="1" max="100" :value="old('percentage', $item['percentage'])" />
         </div>
 
         <div class="grid grid-cols-2 gap-4">

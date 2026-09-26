@@ -24,7 +24,7 @@
                         <tr class="{{ $recurringExpense->active ? '' : 'opacity-50' }}">
                             <td class="px-4 py-2 text-gray-900">{{ $recurringExpense->name }}</td>
                             <td class="px-4 py-2 text-gray-600">
-                                {{ $recurringExpense->allocations->map(fn ($a) => ($childrenById[$a->resource_id]['name'] ?? '?').' ('.$a->percentage.'%)')->implode(', ') }}
+                                {{ $recurringExpense->allocations->map(fn ($a) => ($resourcesById[$a->resource_id]['name'] ?? '?').' ('.$a->percentage.'%)')->implode(', ') }}
                             </td>
                             <td class="px-4 py-2 text-right text-gray-900">{{ $currenciesById[$recurringExpense->currency_id]['code'] ?? '' }} {{ $recurringExpense->total }}</td>
                             <td class="px-4 py-2 text-gray-600">

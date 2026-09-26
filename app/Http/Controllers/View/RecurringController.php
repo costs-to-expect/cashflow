@@ -18,7 +18,7 @@ class RecurringController extends Controller
     {
         return view('recurring.index', [
             'recurringExpenses' => RecurringExpense::query()->with('allocations')->orderBy('name')->get(),
-            'childrenById' => $this->childrenById(),
+            'resourcesById' => $this->resourcesById(),
             'currenciesById' => collect($this->currencies())->keyBy('id')->all(),
         ]);
     }
@@ -29,7 +29,7 @@ class RecurringController extends Controller
         $categories = $this->categories();
 
         return view('recurring.create', [
-            'children' => $this->children(),
+            'resources' => $this->resources(),
             'currencies' => $currencies,
             'defaultCurrencyId' => $this->resolveDefaultCurrencyId($currencies),
             'categories' => $categories,
@@ -45,23 +45,23 @@ class RecurringController extends Controller
 
         return view('recurring.edit', [
             'recurringExpense' => $recurringExpense,
-            'children' => $this->children(),
+            'resources' => $this->resources(),
             'currencies' => $this->sortCurrenciesGbpFirst($this->currencies()),
             'categories' => $categories,
             'subcategoriesByCategory' => $this->subcategoriesByCategory($categories),
         ]);
     }
 
-    private function children(): array
+    private function resources(): array
     {
         $resources = $this->api->resources();
 
         return $resources['status'] === 200 ? $resources['content'] : [];
     }
 
-    private function childrenById(): array
+    private function resourcesById(): array
     {
-        return collect($this->children())->keyBy('id')->all();
+        return collect($this->resources())->keyBy('id')->all();
     }
 
     private function currencies(): array

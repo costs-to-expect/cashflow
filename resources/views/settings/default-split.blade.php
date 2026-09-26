@@ -4,24 +4,24 @@
         The percentages pre-filled whenever you split an expense across more than one {{ strtolower($resourceTermSingular) }}.
     </p>
 
-    @if (count($children) === 0)
-        <p class="text-sm text-gray-600">You need to <a href="{{ route('children.create') }}" class="text-indigo-600 hover:underline">add a {{ strtolower($resourceTermSingular) }}</a> first.</p>
+    @if (count($resources) === 0)
+        <p class="text-sm text-gray-600">You need to <a href="{{ route('resources.create') }}" class="text-indigo-600 hover:underline">add a {{ strtolower($resourceTermSingular) }}</a> first.</p>
     @else
         <form method="POST" action="{{ route('settings.default-split.action') }}" class="max-w-xl space-y-4 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
             @csrf
 
             @php
-                $oldAllocations = old('allocations', count($allocations) > 0 ? $allocations : [['resource_id' => $children[0]['id'], 'percentage' => 100]]);
+                $oldAllocations = old('allocations', count($allocations) > 0 ? $allocations : [['resource_id' => $resources[0]['id'], 'percentage' => 100]]);
             @endphp
 
             <div id="default-split-allocations" class="space-y-3"
-                 data-children='@json(collect($children)->map(fn ($child) => ['id' => $child['id'], 'name' => $child['name']]))'
+                 data-resources='@json(collect($resources)->map(fn ($resource) => ['id' => $resource['id'], 'name' => $resource['name']]))'
                  data-term-singular="{{ $resourceTermSingular }}">
                 @foreach ($oldAllocations as $index => $allocation)
                     <div class="allocation-row grid grid-cols-[1fr_120px_auto] items-end gap-3">
                         <x-helper.form.field.select :name="'allocations['.$index.'][resource_id]'" :title="$resourceTermSingular" required
                             :value="$allocation['resource_id']"
-                            :options="collect($children)->mapWithKeys(fn ($child) => [$child['id'] => $child['name']])"
+                            :options="collect($resources)->mapWithKeys(fn ($resource) => [$resource['id'] => $resource['name']])"
                             :errorKey="'allocations.'.$index.'.resource_id'" />
                         <x-helper.form.field.number :name="'allocations['.$index.'][percentage]'" title="Percentage" required min="1" max="100"
                             :value="$allocation['percentage']" :errorKey="'allocations.'.$index.'.percentage'" />

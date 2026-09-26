@@ -33,9 +33,9 @@
 
     var splitToggle = document.getElementById('split-toggle');
     var addButton = document.getElementById('add-allocation');
-    var children = JSON.parse(container.dataset.children || '[]');
+    var resources = JSON.parse(container.dataset.resources || '[]');
     var defaultSplit = JSON.parse(container.dataset.defaultSplit || '[]');
-    var termSingular = container.dataset.termSingular || 'Child';
+    var termSingular = container.dataset.termSingular || 'Resource';
 
     function rows() {
         return Array.from(container.querySelectorAll('.allocation-row'));
@@ -60,9 +60,9 @@
     }
 
     function buildRow(index, resourceId, percentage) {
-        var options = children.map(function (child) {
-            var selected = child.id === resourceId ? ' selected' : '';
-            return '<option value="' + child.id + '"' + selected + '>' + child.name + '</option>';
+        var options = resources.map(function (resource) {
+            var selected = resource.id === resourceId ? ' selected' : '';
+            return '<option value="' + resource.id + '"' + selected + '>' + resource.name + '</option>';
         }).join('');
 
         var row = document.createElement('div');
@@ -85,11 +85,11 @@
             return;
         }
 
-        var childIds = children.map(function (child) {
-            return child.id;
+        var resourceIds = resources.map(function (resource) {
+            return resource.id;
         });
         var applicable = defaultSplit.filter(function (allocation) {
-            return childIds.indexOf(allocation.resource_id) !== -1;
+            return resourceIds.indexOf(allocation.resource_id) !== -1;
         });
 
         if (applicable.length < 2) {
@@ -114,11 +114,11 @@
         var usedIds = rows().map(function (row) {
             return row.querySelector('select').value;
         });
-        var nextChild = children.find(function (child) {
-            return usedIds.indexOf(child.id) === -1;
-        }) || children[0];
+        var nextResource = resources.find(function (resource) {
+            return usedIds.indexOf(resource.id) === -1;
+        }) || resources[0];
 
-        container.appendChild(buildRow(index, nextChild.id, ''));
+        container.appendChild(buildRow(index, nextResource.id, ''));
         updateToggleUi();
     });
 

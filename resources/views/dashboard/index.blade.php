@@ -5,18 +5,18 @@
             <a href="{{ route('expenses.create') }}"><x-button>Add expense</x-button></a>
             <a href="{{ route('expenses.create', ['split' => 1]) }}"><x-button variant="secondary">Add split expense</x-button></a>
             <a href="{{ route('recurring.index') }}"><x-button variant="secondary">Recurring</x-button></a>
-            <a href="{{ route('children.create') }}"><x-button variant="secondary">Add {{ strtolower($resourceTermSingular) }}</x-button></a>
+            <a href="{{ route('resources.create') }}"><x-button variant="secondary">Add {{ strtolower($resourceTermSingular) }}</x-button></a>
         </div>
     </div>
 
     @if ($apiError)
         <p class="text-sm text-red-600">We couldn't reach the Costs to Expect API, please try again shortly.</p>
-    @elseif (count($children) === 0)
-        <p class="text-sm text-gray-600">No {{ strtolower($resourceTermPlural) }} set up yet. <a href="{{ route('children.create') }}" class="text-indigo-600 hover:underline">Add one</a> to get started.</p>
+    @elseif (count($resources) === 0)
+        <p class="text-sm text-gray-600">No {{ strtolower($resourceTermPlural) }} set up yet. <a href="{{ route('resources.create') }}" class="text-indigo-600 hover:underline">Add one</a> to get started.</p>
     @else
         <div class="mb-6 rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
             <p class="mb-3 text-sm font-semibold text-gray-900">
-                {{ count($children) }} {{ count($children) === 1 ? $resourceTermSingular : $resourceTermPlural }}
+                {{ count($resources) }} {{ count($resources) === 1 ? $resourceTermSingular : $resourceTermPlural }}
             </p>
 
             @if (count($overallPeriodTotals) > 0)
@@ -27,14 +27,14 @@
         </div>
 
         <div class="grid gap-6 sm:grid-cols-2">
-            @foreach ($children as $child)
+            @foreach ($resources as $resource)
                 <div class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
                     <div class="mb-3 flex items-center justify-between">
-                        <a href="{{ route('children.show', $child['id']) }}" class="font-medium text-gray-900 hover:text-indigo-600">{{ $child['name'] }}</a>
-                        <a href="{{ route('children.show', $child['id']) }}" class="text-xs text-indigo-600 hover:underline">View all</a>
+                        <a href="{{ route('resources.show', $resource['id']) }}" class="font-medium text-gray-900 hover:text-indigo-600">{{ $resource['name'] }}</a>
+                        <a href="{{ route('resources.show', $resource['id']) }}" class="text-xs text-indigo-600 hover:underline">View all</a>
                     </div>
 
-                    @php($periodTotals = $periodTotalsByChild[$child['id']] ?? [])
+                    @php($periodTotals = $periodTotalsByResource[$resource['id']] ?? [])
 
                     @if (count($periodTotals) > 0)
                         <div class="mb-4 space-y-3 border-b border-gray-100 pb-4">
@@ -42,7 +42,7 @@
                         </div>
                     @endif
 
-                    @php($recent = $recentByChild[$child['id']] ?? [])
+                    @php($recent = $recentByResource[$resource['id']] ?? [])
 
                     @if (count($recent) === 0)
                         <p class="text-sm text-gray-500">No expenses recorded yet.</p>

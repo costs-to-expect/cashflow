@@ -13,24 +13,26 @@ use App\Http\Controllers\View\ResourceController as ResourceView;
 use App\Http\Controllers\View\SettingsController as SettingsView;
 use Illuminate\Support\Facades\Route;
 
+Route::view('/', 'welcome')->name('welcome');
+
 Route::middleware('guest')->group(function () {
     Route::get('/sign-in', [AuthenticationView::class, 'signIn'])->name('auth.sign-in');
     Route::post('/sign-in', [AuthenticationAction::class, 'signIn'])->name('auth.sign-in.action');
 });
 
 Route::middleware('auth')->group(function () {
-    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/sign-out', [AuthenticationAction::class, 'signOut'])->name('auth.sign-out.action');
 
-    Route::get('/children/create', [ResourceView::class, 'create'])->name('children.create');
-    Route::post('/children', [ResourceAction::class, 'store'])->name('children.create.action');
-    Route::get('/children/{resource_id}', [ResourceView::class, 'show'])->name('children.show');
+    Route::get('/resources/create', [ResourceView::class, 'create'])->name('resources.create');
+    Route::post('/resources', [ResourceAction::class, 'store'])->name('resources.create.action');
+    Route::get('/resources/{resource_id}', [ResourceView::class, 'show'])->name('resources.show');
 
     Route::get('/expenses/create', [ExpenseView::class, 'create'])->name('expenses.create');
     Route::post('/expenses', [ExpenseAction::class, 'store'])->name('expenses.store');
-    Route::get('/children/{resource_id}/expenses/{item_id}/edit', [ExpenseView::class, 'edit'])->name('expenses.edit');
-    Route::post('/children/{resource_id}/expenses/{item_id}/update', [ExpenseAction::class, 'update'])->name('expenses.update');
-    Route::post('/children/{resource_id}/expenses/{item_id}/delete', [ExpenseAction::class, 'destroy'])->name('expenses.delete');
+    Route::get('/resources/{resource_id}/expenses/{item_id}/edit', [ExpenseView::class, 'edit'])->name('expenses.edit');
+    Route::post('/resources/{resource_id}/expenses/{item_id}/update', [ExpenseAction::class, 'update'])->name('expenses.update');
+    Route::post('/resources/{resource_id}/expenses/{item_id}/delete', [ExpenseAction::class, 'destroy'])->name('expenses.delete');
 
     Route::get('/recurring', [RecurringView::class, 'index'])->name('recurring.index');
     Route::get('/recurring/create', [RecurringView::class, 'create'])->name('recurring.create');

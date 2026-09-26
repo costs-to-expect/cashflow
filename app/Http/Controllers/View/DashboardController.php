@@ -15,20 +15,20 @@ class DashboardController extends Controller
 
     public function index(): View
     {
-        $resources = $this->api->resources();
-        $children = $resources['status'] === 200 ? $resources['content'] : [];
+        $response = $this->api->resources();
+        $resources = $response['status'] === 200 ? $response['content'] : [];
 
         $periods = ReportingPeriod::query()->orderBy('sort_order')->get();
 
-        $recentByChild = [];
-        $periodTotalsByChild = [];
+        $recentByResource = [];
+        $periodTotalsByResource = [];
 
-        foreach ($children as $child) {
-            $items = $this->api->items($child['id'], ['sort' => 'effective_date:desc', 'limit' => 5, 'include-categories' => 'true', 'include-subcategories' => 'true']);
-            $recentByChild[$child['id']] = $items['status'] === 200 ? $items['content'] : [];
+        foreach ($resources as $resource) {
+            $items = $this->api->items($resource['id'], ['sort' => 'effective_date:desc', 'limit' => 5, 'include-categories' => 'true', 'include-subcategories' => 'true']);
+            $recentByResource[$resource['id']] = $items['status'] === 200 ? $items['content'] : [];
 
-            $periodTotalsByChild[$child['id']] = $periods->map(
-                fn (ReportingPeriod $period) => $this->periodTotal($period, fn (array $query) => $this->api->itemsSummary($child['id'], $query))
+            $periodTotalsByResource[$resource['id']] = $periods->map(
+                fn (ReportingPeriod $period) => $this->periodTotal($period, fn (array $query) => $this->api->itemsSummary($resource['id'], $query))
             )->all();
         }
 
@@ -37,11 +37,11 @@ class DashboardController extends Controller
         )->all();
 
         return view('dashboard.index', [
-            'children' => $children,
-            'recentByChild' => $recentByChild,
-            'periodTotalsByChild' => $periodTotalsByChild,
+            'resources' => $resources,
+            'recentByResource' => $recentByResource,
+            'periodTotalsByResource' => $periodTotalsByResource,
             'overallPeriodTotals' => $overallPeriodTotals,
-            'apiError' => $resources['status'] !== 200,
+            'apiError' => $response['status'] !== 200,
         ]);
     }
 
@@ -57,8 +57,8 @@ class DashboardController extends Controller
         ]);
 
         // One row per currency present in the range - almost always just
-        // GBP, but a family could easily have the odd USD/EUR expense from
-        // a trip, and those must never be silently added into GBP's total.
+        // one currency, but a resource could easily have the odd expense in
+        // another currency, and those must never be silently added together.
         $totals = $summary['status'] === 200
             ? collect($summary['content'])->map(fn (array $row) => [
                 'currency' => $row['currency']['code'],
