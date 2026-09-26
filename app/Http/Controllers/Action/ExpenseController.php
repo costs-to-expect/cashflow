@@ -21,6 +21,8 @@ class ExpenseController extends Controller
             'effective_date' => ['required', 'date'],
             'currency_id' => ['required', 'string'],
             'total' => ['required', 'regex:/^\d+(\.\d{1,2})?$/'],
+            'category_id' => ['nullable', 'string'],
+            'subcategory_id' => ['nullable', 'string'],
             'allocations' => ['required', 'array', 'min:1'],
             'allocations.*.resource_id' => ['required', 'string'],
             'allocations.*.percentage' => ['required', 'integer', 'min:1', 'max:100'],
@@ -33,6 +35,8 @@ class ExpenseController extends Controller
                 'effective_date' => $validated['effective_date'],
                 'currency_id' => $validated['currency_id'],
                 'total' => $validated['total'],
+                'category_id' => $validated['category_id'] ?: null,
+                'subcategory_id' => $validated['subcategory_id'] ?: null,
             ],
             $validated['allocations'],
         );
@@ -44,7 +48,7 @@ class ExpenseController extends Controller
             'children.show',
             ['resource_id' => $firstResourceId],
             count($validated['allocations']) > 1
-                ? "{$validated['name']} has been added and split across {$this->count($validated)} children."
+                ? "{$validated['name']} has been added and split across {$this->count($validated)} ".strtolower(config('api.resource_term_plural')).'.'
                 : "{$validated['name']} has been added.",
         );
     }
@@ -58,7 +62,12 @@ class ExpenseController extends Controller
             'currency_id' => ['required', 'string'],
             'total' => ['required', 'regex:/^\d+(\.\d{1,2})?$/'],
             'percentage' => ['required', 'integer', 'min:1', 'max:100'],
+            'category_id' => ['nullable', 'string'],
+            'subcategory_id' => ['nullable', 'string'],
         ]);
+
+        $validated['category_id'] = $validated['category_id'] ?: null;
+        $validated['subcategory_id'] = $validated['subcategory_id'] ?: null;
 
         $result = $updateExpense($resource_id, $item_id, $validated);
 

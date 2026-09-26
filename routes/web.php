@@ -4,11 +4,13 @@ use App\Http\Controllers\Action\AuthenticationController as AuthenticationAction
 use App\Http\Controllers\Action\ExpenseController as ExpenseAction;
 use App\Http\Controllers\Action\RecurringController as RecurringAction;
 use App\Http\Controllers\Action\ResourceController as ResourceAction;
+use App\Http\Controllers\Action\SettingsController as SettingsAction;
 use App\Http\Controllers\View\AuthenticationController as AuthenticationView;
 use App\Http\Controllers\View\DashboardController;
 use App\Http\Controllers\View\ExpenseController as ExpenseView;
 use App\Http\Controllers\View\RecurringController as RecurringView;
 use App\Http\Controllers\View\ResourceController as ResourceView;
+use App\Http\Controllers\View\SettingsController as SettingsView;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
@@ -37,4 +39,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/recurring/{recurringExpense}/update', [RecurringAction::class, 'update'])->name('recurring.update');
     Route::post('/recurring/{recurringExpense}/toggle', [RecurringAction::class, 'toggle'])->name('recurring.toggle');
     Route::post('/recurring/{recurringExpense}/delete', [RecurringAction::class, 'destroy'])->name('recurring.delete');
+
+    Route::get('/settings/default-split', [SettingsView::class, 'defaultSplit'])->name('settings.default-split');
+    Route::post('/settings/default-split', [SettingsAction::class, 'saveDefaultSplit'])->name('settings.default-split.action');
 });

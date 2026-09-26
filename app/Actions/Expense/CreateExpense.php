@@ -24,7 +24,7 @@ class CreateExpense
     public function __construct(private readonly ApiService $api) {}
 
     /**
-     * @param  array{name: string, description: ?string, effective_date: string, currency_id: string, total: string}  $expense
+     * @param  array{name: string, description: ?string, effective_date: string, currency_id: string, total: string, category_id?: ?string, subcategory_id?: ?string}  $expense
      * @param  array<int, array{resource_id: string, percentage: int}>  $allocations
      */
     public function __invoke(array $expense, array $allocations): ApiActionResult
@@ -36,14 +36,20 @@ class CreateExpense
         $total = number_format((float) $expense['total'], 2, '.', '');
 
         foreach ($allocations as $allocation) {
-            $response = $this->api->createItem($allocation['resource_id'], [
+            $payload = [
                 'name' => $expense['name'],
                 'description' => $expense['description'],
                 'effective_date' => $expense['effective_date'],
                 'currency_id' => $expense['currency_id'],
                 'total' => $total,
-                'percentage' => $allocation['percentage'],
-            ]);
+            ];
+
+            // The API defaults percentage to 100 when it's not sent.
+            if ((int) $allocation['percentage'] !== 100) {
+                $payload['percentage'] = $allocation['percentage'];
+            }
+
+            $response = $this->api->createItem($allocation['resource_id'], $payload);
 
             if ($response['status'] !== 200 && $response['status'] !== 201) {
                 if ($response['status'] === 422) {
@@ -56,10 +62,40 @@ class CreateExpense
                 );
             }
 
-            $created[$allocation['resource_id']] = $response['content']['id'];
+            $itemId = $response['content']['id'];
+            $created[$allocation['resource_id']] = $itemId;
+
+            if (! empty($expense['category_id'])) {
+                $this->assignCategory($allocation['resource_id'], $itemId, $expense['category_id'], $expense['subcategory_id'] ?? null);
+            }
         }
 
         return ApiActionResult::success(['items' => $created]);
+    }
+
+    /**
+     * Category/subcategory assignment is supplementary - if it fails the
+     * expense item itself has already been created successfully, so we log
+     * rather than failing the whole action.
+     */
+    private function assignCategory(string $resourceId, string $itemId, string $categoryId, ?string $subcategoryId): void
+    {
+        $assigned = $this->api->assignItemCategory($resourceId, $itemId, $categoryId);
+
+        if (! in_array($assigned['status'], [200, 201], true)) {
+            report(new \RuntimeException("Failed to assign category {$categoryId} to item {$itemId}: status {$assigned['status']}"));
+
+            return;
+        }
+
+        if ($subcategoryId !== null) {
+            $itemCategoryId = $assigned['content']['id'];
+            $assignedSub = $this->api->assignItemSubcategory($resourceId, $itemId, $itemCategoryId, $subcategoryId);
+
+            if (! in_array($assignedSub['status'], [200, 201], true)) {
+                report(new \RuntimeException("Failed to assign subcategory {$subcategoryId} to item {$itemId}: status {$assignedSub['status']}"));
+            }
+        }
     }
 
     private function countCreated(array $created): int

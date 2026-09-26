@@ -23,10 +23,34 @@
                     <a href="{{ route('recurring.index') }}" class="text-sm text-gray-600 hover:text-gray-900 {{ request()->routeIs('recurring.*') ? 'font-semibold text-indigo-600' : '' }}">
                         Recurring
                     </a>
+                    <a href="{{ route('settings.default-split') }}" class="text-sm text-gray-600 hover:text-gray-900 {{ request()->routeIs('settings.*') ? 'font-semibold text-indigo-600' : '' }}">
+                        Settings
+                    </a>
                 </div>
             </div>
 
-            <a href="{{ route('auth.sign-out.action') }}" class="text-sm text-gray-500 hover:text-gray-900">Sign out</a>
+            <div class="flex items-center gap-4">
+                <a href="{{ route('auth.sign-out.action') }}" class="hidden text-sm text-gray-500 hover:text-gray-900 sm:inline">Sign out</a>
+
+                <button type="button" id="mobile-menu-toggle" aria-controls="mobile-menu" aria-expanded="false" class="inline-flex items-center rounded-md p-2 text-gray-500 hover:bg-gray-100 sm:hidden">
+                    <svg id="mobile-menu-toggle-open" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" /></svg>
+                    <svg id="mobile-menu-toggle-close" class="hidden h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+            </div>
+        </div>
+
+        <div id="mobile-menu" class="hidden border-t border-gray-200 sm:hidden">
+            <div class="space-y-1 px-4 py-3">
+                @foreach ($navChildren as $navChild)
+                    <a href="{{ route('children.show', $navChild['id']) }}" class="block py-1 text-sm text-gray-600 {{ request()->route('resource_id') === $navChild['id'] ? 'font-semibold text-indigo-600' : '' }}">
+                        {{ $navChild['name'] }}
+                    </a>
+                @endforeach
+
+                <a href="{{ route('recurring.index') }}" class="block py-1 text-sm text-gray-600 {{ request()->routeIs('recurring.*') ? 'font-semibold text-indigo-600' : '' }}">Recurring</a>
+                <a href="{{ route('settings.default-split') }}" class="block py-1 text-sm text-gray-600 {{ request()->routeIs('settings.*') ? 'font-semibold text-indigo-600' : '' }}">Settings</a>
+                <a href="{{ route('auth.sign-out.action') }}" class="block py-1 text-sm text-gray-500">Sign out</a>
+            </div>
         </div>
     </nav>
 
@@ -35,5 +59,7 @@
 
         {{ $slot }}
     </main>
+
+    <script src="{{ asset('js/nav.js') }}" defer></script>
 </body>
 </html>

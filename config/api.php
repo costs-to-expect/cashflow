@@ -24,6 +24,21 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Resource terminology
+    |--------------------------------------------------------------------------
+    |
+    | What a "resource" under the fixed resource type is called in the UI.
+    | Defaults to "Child"/"Children" for this family, but another instance of
+    | this app could be tracking anything (products, projects, ...).
+    |
+    */
+
+    'resource_term_singular' => env('APP_RESOURCE_TERM', 'Child'),
+
+    'resource_term_plural' => env('APP_RESOURCE_TERM_PLURAL', 'Children'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Background service token
     |--------------------------------------------------------------------------
     |

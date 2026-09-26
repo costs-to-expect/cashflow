@@ -5,19 +5,31 @@ declare(strict_types=1);
 namespace App\Http\Controllers\View;
 
 use App\Http\Controllers\Controller;
+use App\Models\DefaultSplitAllocation;
 use App\Service\Api\ApiService;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class ExpenseController extends Controller
 {
     public function __construct(private readonly ApiService $api) {}
 
-    public function create(): View
+    public function create(Request $request): View
     {
+        $children = $this->children();
+        $currencies = $this->sortCurrenciesGbpFirst($this->currencies());
+        $categories = $this->categories();
+
         return view('expenses.create', [
-            'children' => $this->children(),
-            'currencies' => $this->currencies(),
-            'defaultCurrencyId' => config('api.default_currency_id'),
+            'children' => $children,
+            'currencies' => $currencies,
+            'defaultCurrencyId' => $this->resolveDefaultCurrencyId($currencies),
+            'categories' => $categories,
+            'subcategoriesByCategory' => $this->subcategoriesByCategory($categories),
+            'preselectedResourceId' => $request->query('resource_id'),
+            'defaultAllocations' => $this->defaultAllocationsFor($children, $request->boolean('split')),
+            'defaultSplit' => $this->defaultSplitAllocations(),
+            'nameSuggestions' => $this->nameSuggestions($children),
         ]);
     }
 
@@ -27,12 +39,45 @@ class ExpenseController extends Controller
 
         abort_if($item['status'] !== 200, 404, 'That expense could not be found.');
 
+        [$currentCategoryId, $currentSubcategoryId] = $this->currentCategorisation($resource_id, $item_id);
+
+        $children = $this->children();
+        $categories = $this->categories();
+
         return view('expenses.edit', [
             'resourceId' => $resource_id,
             'item' => $item['content'],
-            'children' => $this->children(),
-            'currencies' => $this->currencies(),
+            'children' => $children,
+            'currencies' => $this->sortCurrenciesGbpFirst($this->currencies()),
+            'categories' => $categories,
+            'subcategoriesByCategory' => $this->subcategoriesByCategory($categories),
+            'currentCategoryId' => $currentCategoryId,
+            'currentSubcategoryId' => $currentSubcategoryId,
+            'nameSuggestions' => $this->nameSuggestions($children),
         ]);
+    }
+
+    /**
+     * Distinct names from recent expenses, for the "name" field's datalist.
+     */
+    private function nameSuggestions(array $children): array
+    {
+        $names = [];
+
+        foreach ($children as $child) {
+            $items = $this->api->items($child['id'], ['limit' => 100, 'sort' => 'effective_date:desc']);
+
+            if ($items['status'] === 200) {
+                foreach ($items['content'] as $item) {
+                    $names[$item['name']] = true;
+                }
+            }
+        }
+
+        $names = array_keys($names);
+        sort($names, SORT_NATURAL | SORT_FLAG_CASE);
+
+        return array_slice($names, 0, 150);
     }
 
     private function children(): array
@@ -47,5 +92,79 @@ class ExpenseController extends Controller
         $currencies = $this->api->currencies();
 
         return $currencies['status'] === 200 ? $currencies['content'] : [];
+    }
+
+    private function categories(): array
+    {
+        $categories = $this->api->categories();
+
+        return $categories['status'] === 200 ? $categories['content'] : [];
+    }
+
+    private function subcategoriesByCategory(array $categories): array
+    {
+        $map = [];
+
+        foreach ($categories as $category) {
+            $response = $this->api->subcategories($category['id']);
+
+            $map[$category['id']] = $response['status'] === 200
+                ? collect($response['content'])->map(fn ($s) => ['id' => $s['id'], 'name' => $s['name']])->all()
+                : [];
+        }
+
+        return $map;
+    }
+
+    /**
+     * @return array{0: ?string, 1: ?string} [currentCategoryId, currentSubcategoryId]
+     */
+    private function currentCategorisation(string $resourceId, string $itemId): array
+    {
+        $itemCategories = $this->api->itemCategories($resourceId, $itemId);
+        $current = $itemCategories['status'] === 200 ? ($itemCategories['content'][0] ?? null) : null;
+
+        if ($current === null) {
+            return [null, null];
+        }
+
+        $currentCategoryId = $current['category']['id'];
+
+        $itemSubcategories = $this->api->itemSubcategories($resourceId, $itemId, $current['id']);
+        $currentSub = $itemSubcategories['status'] === 200 ? ($itemSubcategories['content'][0] ?? null) : null;
+
+        return [$currentCategoryId, $currentSub['subcategory']['id'] ?? null];
+    }
+
+    private function defaultSplitAllocations(): array
+    {
+        return DefaultSplitAllocation::query()->orderBy('sort_order')->get(['resource_id', 'percentage'])->toArray();
+    }
+
+    private function defaultAllocationsFor(array $children, bool $forceSplit): ?array
+    {
+        if (! $forceSplit || old('allocations') !== null) {
+            return null;
+        }
+
+        $validResourceIds = collect($children)->pluck('id')->all();
+
+        $filtered = collect($this->defaultSplitAllocations())
+            ->filter(fn ($allocation) => in_array($allocation['resource_id'], $validResourceIds, true))
+            ->values()
+            ->all();
+
+        if (count($filtered) >= 2) {
+            return $filtered;
+        }
+
+        if (count($children) >= 2) {
+            return [
+                ['resource_id' => $children[0]['id'], 'percentage' => 50],
+                ['resource_id' => $children[1]['id'], 'percentage' => 50],
+            ];
+        }
+
+        return null;
     }
 }

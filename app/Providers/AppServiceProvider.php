@@ -26,5 +26,10 @@ class AppServiceProvider extends ServiceProvider
 
             $view->with('navChildren', $children);
         });
+
+        View::composer('*', function ($view) {
+            $view->with('resourceTermSingular', config('api.resource_term_singular'));
+            $view->with('resourceTermPlural', config('api.resource_term_plural'));
+        });
     }
 }

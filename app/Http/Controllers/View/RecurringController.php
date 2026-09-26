@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\View;
 
 use App\Http\Controllers\Controller;
+use App\Models\DefaultSplitAllocation;
 use App\Models\RecurringExpense;
 use App\Service\Api\ApiService;
 use Illuminate\View\View;
@@ -24,10 +25,13 @@ class RecurringController extends Controller
 
     public function create(): View
     {
+        $currencies = $this->sortCurrenciesGbpFirst($this->currencies());
+
         return view('recurring.create', [
             'children' => $this->children(),
-            'currencies' => $this->currencies(),
-            'defaultCurrencyId' => config('api.default_currency_id'),
+            'currencies' => $currencies,
+            'defaultCurrencyId' => $this->resolveDefaultCurrencyId($currencies),
+            'defaultSplit' => DefaultSplitAllocation::query()->orderBy('sort_order')->get(['resource_id', 'percentage'])->toArray(),
         ]);
     }
 
@@ -38,7 +42,7 @@ class RecurringController extends Controller
         return view('recurring.edit', [
             'recurringExpense' => $recurringExpense,
             'children' => $this->children(),
-            'currencies' => $this->currencies(),
+            'currencies' => $this->sortCurrenciesGbpFirst($this->currencies()),
         ]);
     }
 

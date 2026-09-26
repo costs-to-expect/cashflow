@@ -56,6 +56,36 @@ class Uri
         return '/'.self::VERSION.'/resource-types/'.self::resourceTypeId().'/resources/'.$resourceId.'/items/'.$itemId;
     }
 
+    public static function categories(): string
+    {
+        return '/'.self::VERSION.'/resource-types/'.self::resourceTypeId().'/categories?collection=true';
+    }
+
+    public static function subcategories(string $categoryId): string
+    {
+        return '/'.self::VERSION.'/resource-types/'.self::resourceTypeId().'/categories/'.$categoryId.'/subcategories?collection=true';
+    }
+
+    public static function itemCategories(string $resourceId, string $itemId): string
+    {
+        return '/'.self::VERSION.'/resource-types/'.self::resourceTypeId().'/resources/'.$resourceId.'/items/'.$itemId.'/categories';
+    }
+
+    public static function itemCategory(string $resourceId, string $itemId, string $itemCategoryId): string
+    {
+        return self::itemCategories($resourceId, $itemId).'/'.$itemCategoryId;
+    }
+
+    public static function itemSubcategories(string $resourceId, string $itemId, string $itemCategoryId): string
+    {
+        return self::itemCategory($resourceId, $itemId, $itemCategoryId).'/subcategories';
+    }
+
+    public static function itemSubcategory(string $resourceId, string $itemId, string $itemCategoryId, string $itemSubcategoryId): string
+    {
+        return self::itemSubcategories($resourceId, $itemId, $itemCategoryId).'/'.$itemSubcategoryId;
+    }
+
     private static function resourceTypeId(): string
     {
         return (string) Config::get('api.resource_type_id');

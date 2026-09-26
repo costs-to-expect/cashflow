@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Actions\ApiActionResult;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\MessageBag;
 
@@ -17,7 +18,7 @@ abstract class Controller
      * redirects on.
      */
     protected function redirectForApiResult(
-        \App\Actions\ApiActionResult $result,
+        ApiActionResult $result,
         string $successRoute,
         array $successParams = [],
         string $successMessage = 'Done.',
@@ -45,5 +46,29 @@ abstract class Controller
         ));
 
         return back()->with('danger', 'Something went wrong talking to the API, please try again.')->withInput();
+    }
+
+    /**
+     * GBP first, then whatever order the API returned the rest in.
+     */
+    protected function sortCurrenciesGbpFirst(array $currencies): array
+    {
+        usort($currencies, fn (array $a, array $b) => $this->currencyRank($a) <=> $this->currencyRank($b));
+
+        return $currencies;
+    }
+
+    private function currencyRank(array $currency): int
+    {
+        return ($currency['code'] ?? '') === 'GBP' ? 0 : 1;
+    }
+
+    /**
+     * The configured default currency if there is one, otherwise the first
+     * of the (GBP-first sorted) currencies passed in.
+     */
+    protected function resolveDefaultCurrencyId(array $sortedCurrencies): ?string
+    {
+        return config('api.default_currency_id') ?: ($sortedCurrencies[0]['id'] ?? null);
     }
 }

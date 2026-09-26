@@ -4,7 +4,10 @@
             <h1 class="text-lg font-semibold text-gray-900">{{ $child['name'] }}</h1>
             <p class="text-sm text-gray-500">{{ $child['description'] }}</p>
         </div>
-        <a href="{{ route('expenses.create') }}"><x-button>Add expense</x-button></a>
+        <div class="flex gap-2">
+            <a href="{{ route('expenses.create', ['resource_id' => $child['id']]) }}"><x-button>Add Expense for {{ $child['name'] }}</x-button></a>
+            <a href="{{ route('recurring.index') }}"><x-button variant="secondary">Recurring</x-button></a>
+        </div>
     </div>
 
     @if (count($items) === 0)
@@ -28,6 +31,14 @@
                                 <p class="text-gray-900">{{ $item['name'] }}</p>
                                 @if ($item['description'])
                                     <p class="text-xs text-gray-500">{{ $item['description'] }}</p>
+                                @endif
+                                @if (count($item['categories'] ?? []) > 0)
+                                    <p class="text-xs text-gray-400">
+                                        {{ $item['categories'][0]['name'] }}
+                                        @if (count($item['categories'][0]['subcategories'] ?? []) > 0)
+                                            &rsaquo; {{ $item['categories'][0]['subcategories'][0]['name'] }}
+                                        @endif
+                                    </p>
                                 @endif
                             </td>
                             <td class="px-4 py-2 text-right">

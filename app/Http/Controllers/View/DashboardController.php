@@ -20,7 +20,7 @@ class DashboardController extends Controller
         $recentByChild = [];
 
         foreach ($children as $child) {
-            $items = $this->api->items($child['id'], ['sort' => 'effective_date:desc', 'limit' => 5]);
+            $items = $this->api->items($child['id'], ['sort' => 'effective_date:desc', 'limit' => 5, 'include-categories' => 'true', 'include-subcategories' => 'true']);
             $recentByChild[$child['id']] = $items['status'] === 200 ? $items['content'] : [];
         }
 

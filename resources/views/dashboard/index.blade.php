@@ -1,16 +1,18 @@
 <x-layouts.app title="Dashboard">
-    <div class="mb-6 flex items-center justify-between">
+    <div class="mb-6 flex flex-wrap items-center justify-between gap-2">
         <h1 class="text-lg font-semibold text-gray-900">Dashboard</h1>
-        <div class="flex gap-2">
+        <div class="flex flex-wrap gap-2">
             <a href="{{ route('expenses.create') }}"><x-button>Add expense</x-button></a>
-            <a href="{{ route('children.create') }}"><x-button variant="secondary">Add child</x-button></a>
+            <a href="{{ route('expenses.create', ['split' => 1]) }}"><x-button variant="secondary">Add split expense</x-button></a>
+            <a href="{{ route('recurring.index') }}"><x-button variant="secondary">Recurring</x-button></a>
+            <a href="{{ route('children.create') }}"><x-button variant="secondary">Add {{ strtolower($resourceTermSingular) }}</x-button></a>
         </div>
     </div>
 
     @if ($apiError)
         <p class="text-sm text-red-600">We couldn't reach the Costs to Expect API, please try again shortly.</p>
     @elseif (count($children) === 0)
-        <p class="text-sm text-gray-600">No children set up yet. <a href="{{ route('children.create') }}" class="text-indigo-600 hover:underline">Add one</a> to get started.</p>
+        <p class="text-sm text-gray-600">No {{ strtolower($resourceTermPlural) }} set up yet. <a href="{{ route('children.create') }}" class="text-indigo-600 hover:underline">Add one</a> to get started.</p>
     @else
         <div class="grid gap-6 sm:grid-cols-2">
             @foreach ($children as $child)
@@ -31,6 +33,14 @@
                                     <div>
                                         <p class="text-gray-900">{{ $expense['name'] }}</p>
                                         <p class="text-gray-500">{{ \Illuminate\Support\Carbon::parse($expense['effective_date'])->format('j M Y') }}</p>
+                                        @if (count($expense['categories'] ?? []) > 0)
+                                            <p class="text-xs text-gray-400">
+                                                {{ $expense['categories'][0]['name'] }}
+                                                @if (count($expense['categories'][0]['subcategories'] ?? []) > 0)
+                                                    &rsaquo; {{ $expense['categories'][0]['subcategories'][0]['name'] }}
+                                                @endif
+                                            </p>
+                                        @endif
                                     </div>
                                     <div class="text-right">
                                         <p class="font-medium text-gray-900">{{ $expense['currency']['code'] }} {{ $expense['actualised_total'] }}</p>

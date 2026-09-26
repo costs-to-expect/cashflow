@@ -80,4 +80,44 @@ class ApiService
     {
         return $this->http->delete(Uri::item($resourceId, $itemId));
     }
+
+    public function categories(): array
+    {
+        return $this->http->get(Uri::categories());
+    }
+
+    public function subcategories(string $categoryId): array
+    {
+        return $this->http->get(Uri::subcategories($categoryId));
+    }
+
+    public function itemCategories(string $resourceId, string $itemId): array
+    {
+        return $this->http->get(Uri::itemCategories($resourceId, $itemId));
+    }
+
+    public function assignItemCategory(string $resourceId, string $itemId, string $categoryId): array
+    {
+        return $this->http->post(Uri::itemCategories($resourceId, $itemId), ['category_id' => $categoryId]);
+    }
+
+    public function deleteItemCategory(string $resourceId, string $itemId, string $itemCategoryId): array
+    {
+        return $this->http->delete(Uri::itemCategory($resourceId, $itemId, $itemCategoryId));
+    }
+
+    public function itemSubcategories(string $resourceId, string $itemId, string $itemCategoryId): array
+    {
+        return $this->http->get(Uri::itemSubcategories($resourceId, $itemId, $itemCategoryId));
+    }
+
+    public function assignItemSubcategory(string $resourceId, string $itemId, string $itemCategoryId, string $subcategoryId): array
+    {
+        return $this->http->post(Uri::itemSubcategories($resourceId, $itemId, $itemCategoryId), ['subcategory_id' => $subcategoryId]);
+    }
+
+    public function deleteItemSubcategory(string $resourceId, string $itemId, string $itemCategoryId, string $itemSubcategoryId): array
+    {
+        return $this->http->delete(Uri::itemSubcategory($resourceId, $itemId, $itemCategoryId, $itemSubcategoryId));
+    }
 }

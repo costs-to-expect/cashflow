@@ -31,6 +31,8 @@ class ResourceController extends Controller
             'sort' => 'effective_date:desc',
             'limit' => $perPage,
             'offset' => ($page - 1) * $perPage,
+            'include-categories' => 'true',
+            'include-subcategories' => 'true',
         ]);
 
         return view('children.show', [

@@ -13,7 +13,7 @@
                 :options="collect($currencies)->mapWithKeys(fn ($currency) => [$currency['id'] => $currency['code']])" />
         </div>
 
-        <x-helper.form.field.number name="total" title="Total amount" required min="0" step="0.01" :value="old('total', $recurringExpense->total)" />
+        <x-helper.form.field.number name="total" title="Total amount" required min="0" step="0.01" :value="old('total', $recurringExpense->total)" data-format="number" data-points="2" />
 
         @php
             $oldAllocations = old('allocations', $recurringExpense->allocations->map(fn ($a) => ['resource_id' => $a->resource_id, 'percentage' => $a->percentage])->all());
@@ -23,15 +23,17 @@
         <div>
             <label class="flex items-center gap-2 text-sm text-gray-700">
                 <input type="checkbox" id="split-toggle" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" @checked($isSplit)>
-                Split this expense across more than one child
+                Split this expense across more than one {{ strtolower($resourceTermSingular) }}
             </label>
         </div>
 
-        <div id="allocations" class="space-y-3" data-children='@json(collect($children)->map(fn ($child) => ['id' => $child['id'], 'name' => $child['name']]))'>
+        <div id="allocations" class="space-y-3"
+             data-children='@json(collect($children)->map(fn ($child) => ['id' => $child['id'], 'name' => $child['name']]))'
+             data-term-singular="{{ $resourceTermSingular }}">
             @foreach ($oldAllocations as $index => $allocation)
                 <div class="allocation-row grid grid-cols-[1fr_120px_auto] items-end gap-3">
                     <div>
-                        <x-helper.form.field.select :name="'allocations['.$index.'][resource_id]'" title="Child" required
+                        <x-helper.form.field.select :name="'allocations['.$index.'][resource_id]'" :title="$resourceTermSingular" required
                             :value="$allocation['resource_id']"
                             :options="collect($children)->mapWithKeys(fn ($child) => [$child['id'] => $child['name']])"
                             :errorKey="'allocations.'.$index.'.resource_id'" />
@@ -45,12 +47,13 @@
             @endforeach
         </div>
 
-        <button type="button" id="add-allocation" class="{{ $isSplit ? '' : 'hidden' }} text-sm text-indigo-600 hover:underline">+ Add another child</button>
+        <button type="button" id="add-allocation" class="{{ $isSplit ? '' : 'hidden' }} text-sm text-indigo-600 hover:underline">+ Add another {{ strtolower($resourceTermSingular) }}</button>
 
         <div>
             <x-button>Save changes</x-button>
         </div>
     </form>
 
+    <script src="{{ asset('js/format-number.js') }}" defer></script>
     <script src="{{ asset('js/expense-form.js') }}" defer></script>
 </x-layouts.app>

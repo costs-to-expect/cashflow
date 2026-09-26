@@ -1,4 +1,31 @@
 (function () {
+    // Category -> subcategory cascade (plain <select>s, no framework). Runs
+    // on both the create form (with allocations) and the edit form (without).
+    var categorySelect = document.getElementById('category_id');
+    var subcategorySelect = document.getElementById('subcategory_id');
+
+    if (categorySelect && subcategorySelect) {
+        var subcategoriesByCategory = JSON.parse(categorySelect.dataset.subcategories || '{}');
+        var initialSubcategoryId = subcategorySelect.dataset.initial || '';
+
+        var rebuildSubcategoryOptions = function () {
+            var subcategories = subcategoriesByCategory[categorySelect.value] || [];
+            var options = ['<option value="">None</option>'].concat(subcategories.map(function (subcategory) {
+                return '<option value="' + subcategory.id + '">' + subcategory.name + '</option>';
+            }));
+
+            subcategorySelect.innerHTML = options.join('');
+
+            if (initialSubcategoryId) {
+                subcategorySelect.value = initialSubcategoryId;
+                initialSubcategoryId = '';
+            }
+        };
+
+        categorySelect.addEventListener('change', rebuildSubcategoryOptions);
+        rebuildSubcategoryOptions();
+    }
+
     var container = document.getElementById('allocations');
     if (!container) {
         return;
@@ -7,6 +34,8 @@
     var splitToggle = document.getElementById('split-toggle');
     var addButton = document.getElementById('add-allocation');
     var children = JSON.parse(container.dataset.children || '[]');
+    var defaultSplit = JSON.parse(container.dataset.defaultSplit || '[]');
+    var termSingular = container.dataset.termSingular || 'Child';
 
     function rows() {
         return Array.from(container.querySelectorAll('.allocation-row'));
@@ -30,7 +59,55 @@
         });
     }
 
-    splitToggle.addEventListener('change', updateToggleUi);
+    function buildRow(index, resourceId, percentage) {
+        var options = children.map(function (child) {
+            var selected = child.id === resourceId ? ' selected' : '';
+            return '<option value="' + child.id + '"' + selected + '>' + child.name + '</option>';
+        }).join('');
+
+        var row = document.createElement('div');
+        row.className = 'allocation-row grid grid-cols-[1fr_120px_auto] items-end gap-3';
+        row.innerHTML =
+            '<div><label class="block text-sm font-medium text-gray-700">' + termSingular + '</label>' +
+            '<select name="allocations[' + index + '][resource_id]" required class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm">' + options + '</select></div>' +
+            '<div><label class="block text-sm font-medium text-gray-700">Percentage</label>' +
+            '<input type="number" name="allocations[' + index + '][percentage]" value="' + percentage + '" min="1" max="100" required class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"></div>' +
+            '<button type="button" class="remove-allocation pb-2 text-sm text-red-600 hover:underline">Remove</button>';
+
+        return row;
+    }
+
+    // If a default split is configured and the form is still showing a
+    // single (un-split) row, checking the box pre-fills it from the default
+    // rather than leaving the user to add every row by hand.
+    function applyDefaultSplitIfFresh() {
+        if (rows().length > 1 || defaultSplit.length < 2) {
+            return;
+        }
+
+        var childIds = children.map(function (child) {
+            return child.id;
+        });
+        var applicable = defaultSplit.filter(function (allocation) {
+            return childIds.indexOf(allocation.resource_id) !== -1;
+        });
+
+        if (applicable.length < 2) {
+            return;
+        }
+
+        container.innerHTML = '';
+        applicable.forEach(function (allocation, index) {
+            container.appendChild(buildRow(index, allocation.resource_id, allocation.percentage));
+        });
+    }
+
+    splitToggle.addEventListener('change', function () {
+        if (splitToggle.checked) {
+            applyDefaultSplitIfFresh();
+        }
+        updateToggleUi();
+    });
 
     addButton.addEventListener('click', function () {
         var index = rows().length;
@@ -41,21 +118,7 @@
             return usedIds.indexOf(child.id) === -1;
         }) || children[0];
 
-        var options = children.map(function (child) {
-            var selected = child.id === nextChild.id ? ' selected' : '';
-            return '<option value="' + child.id + '"' + selected + '>' + child.name + '</option>';
-        }).join('');
-
-        var row = document.createElement('div');
-        row.className = 'allocation-row grid grid-cols-[1fr_120px_auto] items-end gap-3';
-        row.innerHTML =
-            '<div><label class="block text-sm font-medium text-gray-700">Child</label>' +
-            '<select name="allocations[' + index + '][resource_id]" required class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm">' + options + '</select></div>' +
-            '<div><label class="block text-sm font-medium text-gray-700">Percentage</label>' +
-            '<input type="number" name="allocations[' + index + '][percentage]" min="1" max="100" required class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"></div>' +
-            '<button type="button" class="remove-allocation pb-2 text-sm text-red-600 hover:underline">Remove</button>';
-
-        container.appendChild(row);
+        container.appendChild(buildRow(index, nextChild.id, ''));
         updateToggleUi();
     });
 
