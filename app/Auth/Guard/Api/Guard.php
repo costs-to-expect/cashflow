@@ -1,0 +1,113 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Auth\Guard\Api;
+
+use App\Service\Api\ApiService;
+use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Contracts\Auth\Guard as GuardContract;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cookie;
+
+class Guard implements GuardContract
+{
+    private ?Authenticatable $user = null;
+
+    private array $errors = [];
+
+    public function __construct(
+        private readonly UserProvider $userProvider,
+        private readonly Request $request,
+    ) {}
+
+    public function attempt(string $email, string $password): bool
+    {
+        $email = strtolower(trim($email));
+
+        if (! in_array($email, config('api.allowed_emails'), true)) {
+            $this->errors = ['email' => ['Those credentials are not recognised.']];
+
+            return false;
+        }
+
+        $response = (new ApiService)->signIn($email, $password);
+
+        if ($response['status'] !== 201) {
+            $this->errors = $response['fields'] !== []
+                ? $response['fields']
+                : ['email' => ['Those credentials are not recognised.']];
+
+            return false;
+        }
+
+        $lifetime = 60 * 24 * 30;
+
+        Cookie::queue(config('api.cookie_bearer'), (string) $response['content']['token'], $lifetime);
+        Cookie::queue(config('api.cookie_user'), (string) $response['content']['id'], $lifetime);
+
+        return true;
+    }
+
+    public function errors(): array
+    {
+        return $this->errors;
+    }
+
+    public function check(): bool
+    {
+        return $this->user() !== null;
+    }
+
+    public function guest(): bool
+    {
+        return ! $this->check();
+    }
+
+    public function user(): ?Authenticatable
+    {
+        if ($this->user !== null) {
+            return $this->user;
+        }
+
+        $userId = $this->request->cookie(config('api.cookie_user'));
+
+        if ($userId === null) {
+            return null;
+        }
+
+        $this->user = $this->userProvider->retrieveById($userId);
+
+        return $this->user;
+    }
+
+    public function id(): int|string|null
+    {
+        return $this->user()?->getAuthIdentifier();
+    }
+
+    public function validate(array $credentials = []): bool
+    {
+        return $this->attempt($credentials['email'] ?? '', $credentials['password'] ?? '');
+    }
+
+    public function hasUser(): bool
+    {
+        return $this->user instanceof Authenticatable;
+    }
+
+    public function setUser(Authenticatable $user): static
+    {
+        $this->user = $user;
+
+        return $this;
+    }
+
+    public function logout(): void
+    {
+        Cookie::queue(Cookie::forget(config('api.cookie_bearer')));
+        Cookie::queue(Cookie::forget(config('api.cookie_user')));
+
+        $this->user = null;
+    }
+}
