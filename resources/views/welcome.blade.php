@@ -78,7 +78,7 @@
 
         <p class="mt-20 text-center text-sm text-gray-400">
             Currently in alpha and being tested privately &mdash; will join the rest of the
-            <a href="https://www.costs-to-expect.com" class="text-gray-500 underline hover:text-gray-700">Costs to Expect</a>
+            <a href="https://api.costs-to-expect.com" class="text-gray-500 underline hover:text-gray-700">Costs to Expect</a>
             services once it's ready.
         </p>
     </div>
