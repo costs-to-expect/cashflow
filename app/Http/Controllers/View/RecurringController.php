@@ -7,6 +7,7 @@ namespace App\Http\Controllers\View;
 use App\Http\Controllers\Controller;
 use App\Models\DefaultSplitAllocation;
 use App\Models\RecurringExpense;
+use App\Models\ResourceType;
 use App\Service\Api\ApiService;
 use Illuminate\View\View;
 
@@ -14,16 +15,16 @@ class RecurringController extends Controller
 {
     public function __construct(private readonly ApiService $api) {}
 
-    public function index(): View
+    public function index(ResourceType $resourceType): View
     {
         return view('recurring.index', [
-            'recurringExpenses' => RecurringExpense::query()->with('allocations')->orderBy('name')->get(),
+            'recurringExpenses' => RecurringExpense::query()->where('resource_type_id', $resourceType->id)->with('allocations')->orderBy('name')->get(),
             'resourcesById' => $this->resourcesById(),
             'currenciesById' => collect($this->currencies())->keyBy('id')->all(),
         ]);
     }
 
-    public function create(): View
+    public function create(ResourceType $resourceType): View
     {
         $currencies = $this->sortCurrenciesGbpFirst($this->currencies());
         $categories = $this->categories();
@@ -34,12 +35,14 @@ class RecurringController extends Controller
             'defaultCurrencyId' => $this->resolveDefaultCurrencyId($currencies),
             'categories' => $categories,
             'subcategoriesByCategory' => $this->subcategoriesByCategory($categories),
-            'defaultSplit' => DefaultSplitAllocation::query()->orderBy('sort_order')->get(['resource_id', 'percentage'])->toArray(),
+            'defaultSplit' => DefaultSplitAllocation::query()->where('resource_type_id', $resourceType->id)->orderBy('sort_order')->get(['resource_id', 'percentage'])->toArray(),
         ]);
     }
 
-    public function edit(RecurringExpense $recurringExpense): View
+    public function edit(ResourceType $resourceType, RecurringExpense $recurringExpense): View
     {
+        abort_unless($recurringExpense->resource_type_id === $resourceType->id, 404);
+
         $recurringExpense->load('allocations');
         $categories = $this->categories();
 

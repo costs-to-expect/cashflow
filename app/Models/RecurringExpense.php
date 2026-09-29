@@ -6,6 +6,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class RecurringExpense extends Model
@@ -13,6 +14,7 @@ class RecurringExpense extends Model
     use HasFactory;
 
     protected $fillable = [
+        'resource_type_id',
         'name',
         'description',
         'currency_id',
@@ -34,6 +36,11 @@ class RecurringExpense extends Model
         'active' => 'boolean',
         'day_of_month' => 'integer',
     ];
+
+    public function resourceType(): BelongsTo
+    {
+        return $this->belongsTo(ResourceType::class);
+    }
 
     public function allocations(): HasMany
     {

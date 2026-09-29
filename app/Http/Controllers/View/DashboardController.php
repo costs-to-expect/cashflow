@@ -6,6 +6,7 @@ namespace App\Http\Controllers\View;
 
 use App\Http\Controllers\Controller;
 use App\Models\ReportingPeriod;
+use App\Models\ResourceType;
 use App\Service\Api\ApiService;
 use Illuminate\View\View;
 
@@ -13,12 +14,12 @@ class DashboardController extends Controller
 {
     public function __construct(private readonly ApiService $api) {}
 
-    public function index(): View
+    public function index(ResourceType $resourceType): View
     {
         $response = $this->api->resources();
         $resources = $response['status'] === 200 ? $response['content'] : [];
 
-        $periods = ReportingPeriod::query()->orderBy('sort_order')->get();
+        $periods = ReportingPeriod::query()->where('resource_type_id', $resourceType->id)->orderBy('sort_order')->get();
 
         $recentByResource = [];
         $periodTotalsByResource = [];

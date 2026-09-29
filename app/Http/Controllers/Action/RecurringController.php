@@ -10,16 +10,18 @@ use App\Actions\Recurring\ToggleRecurringExpense;
 use App\Actions\Recurring\UpdateRecurringExpense;
 use App\Http\Controllers\Controller;
 use App\Models\RecurringExpense;
+use App\Models\ResourceType;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
 class RecurringController extends Controller
 {
-    public function store(Request $request, CreateRecurringExpense $createRecurringExpense): RedirectResponse
+    public function store(Request $request, ResourceType $resourceType, CreateRecurringExpense $createRecurringExpense): RedirectResponse
     {
         $validated = $this->validated($request);
 
         $result = $createRecurringExpense(
+            $resourceType,
             [
                 'name' => $validated['name'],
                 'description' => $validated['description'] ?? null,
@@ -37,8 +39,10 @@ class RecurringController extends Controller
         return $this->redirectForApiResult($result, 'recurring.index', [], "{$validated['name']} will now repeat monthly.");
     }
 
-    public function update(Request $request, RecurringExpense $recurringExpense, UpdateRecurringExpense $updateRecurringExpense): RedirectResponse
+    public function update(Request $request, ResourceType $resourceType, RecurringExpense $recurringExpense, UpdateRecurringExpense $updateRecurringExpense): RedirectResponse
     {
+        abort_unless($recurringExpense->resource_type_id === $resourceType->id, 404);
+
         $validated = $this->validated($request);
 
         $result = $updateRecurringExpense(
@@ -60,15 +64,19 @@ class RecurringController extends Controller
         return $this->redirectForApiResult($result, 'recurring.index', [], "{$validated['name']} has been updated.");
     }
 
-    public function toggle(RecurringExpense $recurringExpense, ToggleRecurringExpense $toggleRecurringExpense): RedirectResponse
+    public function toggle(ResourceType $resourceType, RecurringExpense $recurringExpense, ToggleRecurringExpense $toggleRecurringExpense): RedirectResponse
     {
+        abort_unless($recurringExpense->resource_type_id === $resourceType->id, 404);
+
         $toggleRecurringExpense($recurringExpense);
 
         return redirect()->route('recurring.index')->with('status', $recurringExpense->active ? "{$recurringExpense->name} resumed." : "{$recurringExpense->name} paused.");
     }
 
-    public function destroy(RecurringExpense $recurringExpense, DeleteRecurringExpense $deleteRecurringExpense): RedirectResponse
+    public function destroy(ResourceType $resourceType, RecurringExpense $recurringExpense, DeleteRecurringExpense $deleteRecurringExpense): RedirectResponse
     {
+        abort_unless($recurringExpense->resource_type_id === $resourceType->id, 404);
+
         $name = $recurringExpense->name;
         $deleteRecurringExpense($recurringExpense);
 

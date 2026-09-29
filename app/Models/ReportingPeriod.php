@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 
 class ReportingPeriod extends Model
 {
     protected $fillable = [
+        'resource_type_id',
         'name',
         'start_month',
         'start_day',
@@ -25,6 +27,11 @@ class ReportingPeriod extends Model
         'end_day' => 'integer',
         'sort_order' => 'integer',
     ];
+
+    public function resourceType(): BelongsTo
+    {
+        return $this->belongsTo(ResourceType::class);
+    }
 
     /**
      * The absolute start/end dates of the current instance of this

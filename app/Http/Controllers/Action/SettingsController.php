@@ -11,13 +11,14 @@ use App\Actions\Category\UpdateSubcategory;
 use App\Actions\Settings\SaveDefaultSplit;
 use App\Http\Controllers\Controller;
 use App\Models\ReportingPeriod;
+use App\Models\ResourceType;
 use App\Models\Setting;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
 class SettingsController extends Controller
 {
-    public function saveDefaultSplit(Request $request, SaveDefaultSplit $saveDefaultSplit): RedirectResponse
+    public function saveDefaultSplit(Request $request, ResourceType $resourceType, SaveDefaultSplit $saveDefaultSplit): RedirectResponse
     {
         $validated = $request->validate([
             'allocations' => ['required', 'array', 'min:1'],
@@ -25,20 +26,20 @@ class SettingsController extends Controller
             'allocations.*.percentage' => ['required', 'integer', 'min:1', 'max:100'],
         ]);
 
-        $saveDefaultSplit($validated['allocations']);
+        $saveDefaultSplit($resourceType, $validated['allocations']);
 
         return redirect()->route('settings.default-split')->with('status', 'Default split saved.');
     }
 
-    public function saveResourceNaming(Request $request): RedirectResponse
+    public function saveResourceNaming(Request $request, ResourceType $resourceType): RedirectResponse
     {
         $validated = $request->validate([
             'singular' => ['required', 'string', 'max:255'],
             'plural' => ['required', 'string', 'max:255'],
         ]);
 
-        Setting::set('resource_term_singular', $validated['singular']);
-        Setting::set('resource_term_plural', $validated['plural']);
+        Setting::set('resource_term_singular', $validated['singular'], $resourceType);
+        Setting::set('resource_term_plural', $validated['plural'], $resourceType);
 
         return redirect()->route('settings.resource-naming')->with('status', 'Naming saved.');
     }
@@ -105,13 +106,14 @@ class SettingsController extends Controller
         return $this->redirectForApiResult($result, 'settings.categories', [], "{$name} has been updated.");
     }
 
-    public function storePeriod(Request $request): RedirectResponse
+    public function storePeriod(Request $request, ResourceType $resourceType): RedirectResponse
     {
         $validated = $request->validate($this->periodRules());
 
         ReportingPeriod::create([
             ...$validated,
-            'sort_order' => ReportingPeriod::query()->max('sort_order') + 1,
+            'resource_type_id' => $resourceType->id,
+            'sort_order' => ReportingPeriod::query()->where('resource_type_id', $resourceType->id)->max('sort_order') + 1,
         ]);
 
         return redirect()->route('settings.periods')->with('status', "{$validated['name']} has been added.");
@@ -122,8 +124,10 @@ class SettingsController extends Controller
      * are named periods[{id}][field] so a failed submission's old()/error
      * state can't bleed into other cards.
      */
-    public function updatePeriod(Request $request, ReportingPeriod $reportingPeriod): RedirectResponse
+    public function updatePeriod(Request $request, ResourceType $resourceType, ReportingPeriod $reportingPeriod): RedirectResponse
     {
+        abort_unless($reportingPeriod->resource_type_id === $resourceType->id, 404);
+
         $validated = $request->validate($this->periodRules("periods.{$reportingPeriod->id}."));
 
         $data = $validated['periods'][$reportingPeriod->id];
@@ -133,8 +137,10 @@ class SettingsController extends Controller
         return redirect()->route('settings.periods')->with('status', "{$data['name']} has been updated.");
     }
 
-    public function destroyPeriod(ReportingPeriod $reportingPeriod): RedirectResponse
+    public function destroyPeriod(ResourceType $resourceType, ReportingPeriod $reportingPeriod): RedirectResponse
     {
+        abort_unless($reportingPeriod->resource_type_id === $resourceType->id, 404);
+
         $name = $reportingPeriod->name;
         $reportingPeriod->delete();
 

@@ -7,6 +7,7 @@ namespace App\Http\Controllers\View;
 use App\Http\Controllers\Controller;
 use App\Models\DefaultSplitAllocation;
 use App\Models\ReportingPeriod;
+use App\Models\ResourceType;
 use App\Models\Setting;
 use App\Service\Api\ApiService;
 use Illuminate\View\View;
@@ -20,21 +21,21 @@ class SettingsController extends Controller
         return view('settings.index');
     }
 
-    public function defaultSplit(): View
+    public function defaultSplit(ResourceType $resourceType): View
     {
         $response = $this->api->resources();
 
         return view('settings.default-split', [
             'resources' => $response['status'] === 200 ? $response['content'] : [],
-            'allocations' => DefaultSplitAllocation::query()->orderBy('sort_order')->get(['resource_id', 'percentage'])->toArray(),
+            'allocations' => DefaultSplitAllocation::query()->where('resource_type_id', $resourceType->id)->orderBy('sort_order')->get(['resource_id', 'percentage'])->toArray(),
         ]);
     }
 
-    public function resourceNaming(): View
+    public function resourceNaming(ResourceType $resourceType): View
     {
         return view('settings.resource-naming', [
-            'singular' => Setting::get('resource_term_singular', config('app.api.resource_term_singular')),
-            'plural' => Setting::get('resource_term_plural', config('app.api.resource_term_plural')),
+            'singular' => Setting::get('resource_term_singular', config('app.api.resource_term_singular'), $resourceType),
+            'plural' => Setting::get('resource_term_plural', config('app.api.resource_term_plural'), $resourceType),
         ]);
     }
 
@@ -55,10 +56,10 @@ class SettingsController extends Controller
         ]);
     }
 
-    public function periods(): View
+    public function periods(ResourceType $resourceType): View
     {
         return view('settings.periods', [
-            'periods' => ReportingPeriod::query()->orderBy('sort_order')->get(),
+            'periods' => ReportingPeriod::query()->where('resource_type_id', $resourceType->id)->orderBy('sort_order')->get(),
         ]);
     }
 }

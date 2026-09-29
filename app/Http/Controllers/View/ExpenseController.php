@@ -6,6 +6,7 @@ namespace App\Http\Controllers\View;
 
 use App\Http\Controllers\Controller;
 use App\Models\DefaultSplitAllocation;
+use App\Models\ResourceType;
 use App\Service\Api\ApiService;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -14,7 +15,7 @@ class ExpenseController extends Controller
 {
     public function __construct(private readonly ApiService $api) {}
 
-    public function create(Request $request): View
+    public function create(Request $request, ResourceType $resourceType): View
     {
         $resources = $this->resources();
         $currencies = $this->sortCurrenciesGbpFirst($this->currencies());
@@ -27,8 +28,8 @@ class ExpenseController extends Controller
             'categories' => $categories,
             'subcategoriesByCategory' => $this->subcategoriesByCategory($categories),
             'preselectedResourceId' => $request->query('resource_id'),
-            'defaultAllocations' => $this->defaultAllocationsFor($resources, $request->boolean('split')),
-            'defaultSplit' => $this->defaultSplitAllocations(),
+            'defaultAllocations' => $this->defaultAllocationsFor($resources, $request->boolean('split'), $resourceType),
+            'defaultSplit' => $this->defaultSplitAllocations($resourceType),
             'nameSuggestions' => $this->nameSuggestions($resources),
         ]);
     }
@@ -136,12 +137,12 @@ class ExpenseController extends Controller
         return [$currentCategoryId, $currentSub['subcategory']['id'] ?? null];
     }
 
-    private function defaultSplitAllocations(): array
+    private function defaultSplitAllocations(ResourceType $resourceType): array
     {
-        return DefaultSplitAllocation::query()->orderBy('sort_order')->get(['resource_id', 'percentage'])->toArray();
+        return DefaultSplitAllocation::query()->where('resource_type_id', $resourceType->id)->orderBy('sort_order')->get(['resource_id', 'percentage'])->toArray();
     }
 
-    private function defaultAllocationsFor(array $resources, bool $forceSplit): ?array
+    private function defaultAllocationsFor(array $resources, bool $forceSplit, ResourceType $resourceType): ?array
     {
         if (! $forceSplit || old('allocations') !== null) {
             return null;
@@ -149,7 +150,7 @@ class ExpenseController extends Controller
 
         $validResourceIds = collect($resources)->pluck('id')->all();
 
-        $filtered = collect($this->defaultSplitAllocations())
+        $filtered = collect($this->defaultSplitAllocations($resourceType))
             ->filter(fn ($allocation) => in_array($allocation['resource_id'], $validResourceIds, true))
             ->values()
             ->all();
