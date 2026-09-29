@@ -2,7 +2,7 @@
     <h1 class="mb-2 text-lg font-semibold text-gray-900">Edit monthly recurring expense</h1>
     <p class="mb-6 text-sm text-gray-600">This expense is created automatically every month, between the start and (optional) end date below.</p>
 
-    <form method="POST" action="{{ route('recurring.update', $recurringExpense) }}" class="max-w-xl space-y-4 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+    <form method="POST" action="{{ route('recurring.update', [$currentResourceType, $recurringExpense]) }}" class="max-w-xl space-y-4 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
         @csrf
 
         <x-helper.form.field.text name="name" title="Name" required :value="old('name', $recurringExpense->name)" />

@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Action;
 
 use App\Actions\ApiActionResult;
 use App\Http\Controllers\Controller;
+use App\Models\ResourceType;
 use App\Service\Api\ApiService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -14,7 +15,7 @@ class ResourceController extends Controller
 {
     public function __construct(private readonly ApiService $api) {}
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request, ResourceType $resourceType): RedirectResponse
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
@@ -27,7 +28,7 @@ class ResourceController extends Controller
             return $this->redirectForApiResult(
                 ApiActionResult::success(),
                 'resources.show',
-                ['resource_id' => $response['content']['id']],
+                ['resourceType' => $resourceType, 'resource_id' => $response['content']['id']],
                 "{$response['content']['name']} has been added.",
             );
         }

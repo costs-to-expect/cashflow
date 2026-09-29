@@ -1,7 +1,7 @@
 <x-layouts.app title="Recurring expenses">
     <div class="mb-6 flex items-center justify-between">
         <h1 class="text-lg font-semibold text-gray-900">Recurring expenses</h1>
-        <a href="{{ route('recurring.create') }}"><x-button>Add recurring expense</x-button></a>
+        <a href="{{ route('recurring.create', $currentResourceType) }}"><x-button>Add recurring expense</x-button></a>
     </div>
 
     @if ($recurringExpenses->isEmpty())
@@ -37,14 +37,14 @@
                                 @endif
                             </td>
                             <td class="px-4 py-2 text-right whitespace-nowrap">
-                                <a href="{{ route('recurring.edit', $recurringExpense) }}" class="text-indigo-600 hover:underline">Edit</a>
-                                <form method="POST" action="{{ route('recurring.toggle', $recurringExpense) }}" class="inline">
+                                <a href="{{ route('recurring.edit', [$currentResourceType, $recurringExpense]) }}" class="text-indigo-600 hover:underline">Edit</a>
+                                <form method="POST" action="{{ route('recurring.toggle', [$currentResourceType, $recurringExpense]) }}" class="inline">
                                     @csrf
                                     <button type="submit" class="ml-3 text-gray-600 hover:underline">{{ $recurringExpense->active ? 'Pause' : 'Resume' }}</button>
                                 </form>
                             </td>
                             <td class="px-4 py-2 text-right whitespace-nowrap">
-                                <form method="POST" action="{{ route('recurring.delete', $recurringExpense) }}" onsubmit="return confirm('Delete this recurring expense?');">
+                                <form method="POST" action="{{ route('recurring.delete', [$currentResourceType, $recurringExpense]) }}" onsubmit="return confirm('Delete this recurring expense?');">
                                     @csrf
                                     <button type="submit" class="text-red-600 hover:underline">Delete</button>
                                 </form>

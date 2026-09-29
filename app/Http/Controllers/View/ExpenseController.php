@@ -34,7 +34,7 @@ class ExpenseController extends Controller
         ]);
     }
 
-    public function edit(string $resource_id, string $item_id): View
+    public function edit(ResourceType $resourceType, string $resource_id, string $item_id): View
     {
         $item = $this->api->item($resource_id, $item_id);
 

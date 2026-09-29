@@ -19,10 +19,10 @@ class AuthenticationController extends Controller
         if ($result->ok) {
             $request->session()->regenerate();
 
-            return redirect()->route('dashboard');
+            return redirect()->route('resource-types.index');
         }
 
-        return $this->redirectForApiResult($result, 'dashboard');
+        return $this->redirectForApiResult($result, 'resource-types.index');
     }
 
     public function signOut(): RedirectResponse

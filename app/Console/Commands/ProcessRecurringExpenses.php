@@ -7,6 +7,7 @@ namespace App\Console\Commands;
 use App\Actions\Expense\CreateExpense;
 use App\Models\RecurringExpense;
 use App\Models\RecurringExpenseRun;
+use App\Models\ResourceType;
 use App\Service\Api\ApiService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
@@ -16,6 +17,18 @@ class ProcessRecurringExpenses extends Command
     protected $signature = 'expense:process-recurring';
 
     protected $description = 'Post any active recurring expenses that are due today (or overdue) to the API';
+
+    private string $serviceToken;
+
+    /**
+     * One CreateExpense (and its underlying ApiService) per resource type,
+     * built the first time a due recurring expense needs it - each resource
+     * type needs its own API scoping, so a single instance built once
+     * globally (as before multiple resource types existed) no longer works.
+     *
+     * @var array<int, CreateExpense>
+     */
+    private array $createExpenseByResourceType = [];
 
     public function handle(): int
     {
@@ -27,14 +40,14 @@ class ProcessRecurringExpenses extends Command
             return self::FAILURE;
         }
 
-        $createExpense = new CreateExpense(new ApiService($serviceToken));
+        $this->serviceToken = $serviceToken;
 
         $today = Carbon::today();
 
         $due = RecurringExpense::query()
             ->where('active', true)
             ->where('next_run_date', '<=', $today)
-            ->with('allocations')
+            ->with(['allocations', 'resourceType'])
             ->get();
 
         foreach ($due as $recurringExpense) {
@@ -54,6 +67,8 @@ class ProcessRecurringExpenses extends Command
 
                 continue;
             }
+
+            $createExpense = $this->createExpenseFor($recurringExpense->resourceType);
 
             $result = $createExpense(
                 [
@@ -91,5 +106,12 @@ class ProcessRecurringExpenses extends Command
         }
 
         return self::SUCCESS;
+    }
+
+    private function createExpenseFor(ResourceType $resourceType): CreateExpense
+    {
+        return $this->createExpenseByResourceType[$resourceType->id] ??= new CreateExpense(
+            new ApiService($this->serviceToken, $resourceType->api_resource_type_id, $resourceType->item_subtype_id)
+        );
     }
 }

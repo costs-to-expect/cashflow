@@ -36,7 +36,7 @@ class RecurringController extends Controller
             $validated['allocations'],
         );
 
-        return $this->redirectForApiResult($result, 'recurring.index', [], "{$validated['name']} will now repeat monthly.");
+        return $this->redirectForApiResult($result, 'recurring.index', ['resourceType' => $resourceType], "{$validated['name']} will now repeat monthly.");
     }
 
     public function update(Request $request, ResourceType $resourceType, RecurringExpense $recurringExpense, UpdateRecurringExpense $updateRecurringExpense): RedirectResponse
@@ -61,7 +61,7 @@ class RecurringController extends Controller
             $validated['allocations'],
         );
 
-        return $this->redirectForApiResult($result, 'recurring.index', [], "{$validated['name']} has been updated.");
+        return $this->redirectForApiResult($result, 'recurring.index', ['resourceType' => $resourceType], "{$validated['name']} has been updated.");
     }
 
     public function toggle(ResourceType $resourceType, RecurringExpense $recurringExpense, ToggleRecurringExpense $toggleRecurringExpense): RedirectResponse
@@ -70,7 +70,7 @@ class RecurringController extends Controller
 
         $toggleRecurringExpense($recurringExpense);
 
-        return redirect()->route('recurring.index')->with('status', $recurringExpense->active ? "{$recurringExpense->name} resumed." : "{$recurringExpense->name} paused.");
+        return redirect()->route('recurring.index', $resourceType)->with('status', $recurringExpense->active ? "{$recurringExpense->name} resumed." : "{$recurringExpense->name} paused.");
     }
 
     public function destroy(ResourceType $resourceType, RecurringExpense $recurringExpense, DeleteRecurringExpense $deleteRecurringExpense): RedirectResponse
@@ -80,7 +80,7 @@ class RecurringController extends Controller
         $name = $recurringExpense->name;
         $deleteRecurringExpense($recurringExpense);
 
-        return redirect()->route('recurring.index')->with('status', "{$name} has been removed.");
+        return redirect()->route('recurring.index', $resourceType)->with('status', "{$name} has been removed.");
     }
 
     private function validated(Request $request): array

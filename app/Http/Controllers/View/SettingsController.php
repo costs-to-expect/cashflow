@@ -16,7 +16,12 @@ class SettingsController extends Controller
 {
     public function __construct(private readonly ApiService $api) {}
 
-    public function index(): View
+    /**
+     * $resourceType isn't used directly here, but a route-bound model
+     * parameter must be declared on every {resourceType}-prefixed route's
+     * controller method - see the note on ResourceController::create().
+     */
+    public function index(ResourceType $resourceType): View
     {
         return view('settings.index');
     }
@@ -39,7 +44,7 @@ class SettingsController extends Controller
         ]);
     }
 
-    public function categories(): View
+    public function categories(ResourceType $resourceType): View
     {
         $categoriesResponse = $this->api->categories();
         $categories = $categoriesResponse['status'] === 200 ? $categoriesResponse['content'] : [];

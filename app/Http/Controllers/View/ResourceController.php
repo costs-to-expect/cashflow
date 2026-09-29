@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\View;
 
 use App\Http\Controllers\Controller;
+use App\Models\ResourceType;
 use App\Service\Api\ApiService;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -13,12 +14,20 @@ class ResourceController extends Controller
 {
     public function __construct(private readonly ApiService $api) {}
 
-    public function create(): View
+    /**
+     * $resourceType isn't used directly here, but a route-bound model
+     * parameter must be declared on every {resourceType}-prefixed route's
+     * controller method - that's what tells Laravel's implicit route
+     * binding to actually substitute it into a real model, which the shared
+     * layout (nav links, current-resource-type-scoped settings lookups)
+     * depends on for every page.
+     */
+    public function create(ResourceType $resourceType): View
     {
         return view('resources.create');
     }
 
-    public function show(Request $request, string $resource_id): View
+    public function show(Request $request, ResourceType $resourceType, string $resource_id): View
     {
         $resource = $this->api->resource($resource_id);
 

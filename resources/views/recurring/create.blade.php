@@ -3,9 +3,9 @@
     <p class="mb-6 text-sm text-gray-600">This expense is created automatically every month, between the start and (optional) end date below.</p>
 
     @if (count($resources) === 0)
-        <p class="text-sm text-gray-600">You need to <a href="{{ route('resources.create') }}" class="text-indigo-600 hover:underline">add a {{ strtolower($resourceTermSingular) }}</a> first.</p>
+        <p class="text-sm text-gray-600">You need to <a href="{{ route('resources.create', $currentResourceType) }}" class="text-indigo-600 hover:underline">add a {{ strtolower($resourceTermSingular) }}</a> first.</p>
     @else
-        <form method="POST" action="{{ route('recurring.store') }}" class="max-w-xl space-y-4 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+        <form method="POST" action="{{ route('recurring.store', $currentResourceType) }}" class="max-w-xl space-y-4 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
             @csrf
 
             <x-helper.form.field.text name="name" title="Name" required :value="old('name')" />

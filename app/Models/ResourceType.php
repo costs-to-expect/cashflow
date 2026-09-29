@@ -22,4 +22,22 @@ class ResourceType extends Model
     protected $casts = [
         'sort_order' => 'integer',
     ];
+
+    /**
+     * URLs show the API's own resource type id rather than this app's
+     * internal auto-increment one.
+     */
+    public function getRouteKeyName(): string
+    {
+        return 'api_resource_type_id';
+    }
+
+    public function itemTypeLabel(): string
+    {
+        return match ($this->item_type) {
+            'allocated-expense' => 'Expense tracking',
+            'allocated-transaction' => 'Transaction tracking',
+            default => $this->item_type,
+        };
+    }
 }

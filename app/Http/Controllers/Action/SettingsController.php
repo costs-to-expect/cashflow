@@ -28,7 +28,7 @@ class SettingsController extends Controller
 
         $saveDefaultSplit($resourceType, $validated['allocations']);
 
-        return redirect()->route('settings.default-split')->with('status', 'Default split saved.');
+        return redirect()->route('settings.default-split', $resourceType)->with('status', 'Default split saved.');
     }
 
     public function saveResourceNaming(Request $request, ResourceType $resourceType): RedirectResponse
@@ -41,10 +41,10 @@ class SettingsController extends Controller
         Setting::set('resource_term_singular', $validated['singular'], $resourceType);
         Setting::set('resource_term_plural', $validated['plural'], $resourceType);
 
-        return redirect()->route('settings.resource-naming')->with('status', 'Naming saved.');
+        return redirect()->route('settings.resource-naming', $resourceType)->with('status', 'Naming saved.');
     }
 
-    public function storeCategory(Request $request, CreateCategory $createCategory): RedirectResponse
+    public function storeCategory(Request $request, ResourceType $resourceType, CreateCategory $createCategory): RedirectResponse
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
@@ -53,7 +53,7 @@ class SettingsController extends Controller
 
         $result = $createCategory($validated['name'], $validated['description']);
 
-        return $this->redirectForApiResult($result, 'settings.categories', [], "{$validated['name']} has been added.");
+        return $this->redirectForApiResult($result, 'settings.categories', ['resourceType' => $resourceType], "{$validated['name']} has been added.");
     }
 
     /**
@@ -61,7 +61,7 @@ class SettingsController extends Controller
      * rendered at once - fields are named categories[{id}][name] etc so a
      * failed submission's old()/error state can't bleed into other cards.
      */
-    public function updateCategory(Request $request, string $category_id, UpdateCategory $updateCategory): RedirectResponse
+    public function updateCategory(Request $request, ResourceType $resourceType, string $category_id, UpdateCategory $updateCategory): RedirectResponse
     {
         $validated = $request->validate([
             "categories.{$category_id}.name" => ['required', 'string', 'max:255'],
@@ -73,10 +73,10 @@ class SettingsController extends Controller
 
         $result = $updateCategory($category_id, $name, $description);
 
-        return $this->redirectForApiResult($result, 'settings.categories', [], "{$name} has been updated.");
+        return $this->redirectForApiResult($result, 'settings.categories', ['resourceType' => $resourceType], "{$name} has been updated.");
     }
 
-    public function storeSubcategory(Request $request, string $category_id, CreateSubcategory $createSubcategory): RedirectResponse
+    public function storeSubcategory(Request $request, ResourceType $resourceType, string $category_id, CreateSubcategory $createSubcategory): RedirectResponse
     {
         $validated = $request->validate([
             "new_subcategories.{$category_id}.name" => ['required', 'string', 'max:255'],
@@ -88,10 +88,10 @@ class SettingsController extends Controller
 
         $result = $createSubcategory($category_id, $name, $description);
 
-        return $this->redirectForApiResult($result, 'settings.categories', [], "{$name} has been added.");
+        return $this->redirectForApiResult($result, 'settings.categories', ['resourceType' => $resourceType], "{$name} has been added.");
     }
 
-    public function updateSubcategory(Request $request, string $category_id, string $subcategory_id, UpdateSubcategory $updateSubcategory): RedirectResponse
+    public function updateSubcategory(Request $request, ResourceType $resourceType, string $category_id, string $subcategory_id, UpdateSubcategory $updateSubcategory): RedirectResponse
     {
         $validated = $request->validate([
             "subcategories.{$subcategory_id}.name" => ['required', 'string', 'max:255'],
@@ -103,7 +103,7 @@ class SettingsController extends Controller
 
         $result = $updateSubcategory($category_id, $subcategory_id, $name, $description);
 
-        return $this->redirectForApiResult($result, 'settings.categories', [], "{$name} has been updated.");
+        return $this->redirectForApiResult($result, 'settings.categories', ['resourceType' => $resourceType], "{$name} has been updated.");
     }
 
     public function storePeriod(Request $request, ResourceType $resourceType): RedirectResponse
@@ -116,7 +116,7 @@ class SettingsController extends Controller
             'sort_order' => ReportingPeriod::query()->where('resource_type_id', $resourceType->id)->max('sort_order') + 1,
         ]);
 
-        return redirect()->route('settings.periods')->with('status', "{$validated['name']} has been added.");
+        return redirect()->route('settings.periods', $resourceType)->with('status', "{$validated['name']} has been added.");
     }
 
     /**
@@ -134,7 +134,7 @@ class SettingsController extends Controller
 
         $reportingPeriod->update($data);
 
-        return redirect()->route('settings.periods')->with('status', "{$data['name']} has been updated.");
+        return redirect()->route('settings.periods', $resourceType)->with('status', "{$data['name']} has been updated.");
     }
 
     public function destroyPeriod(ResourceType $resourceType, ReportingPeriod $reportingPeriod): RedirectResponse
@@ -144,7 +144,7 @@ class SettingsController extends Controller
         $name = $reportingPeriod->name;
         $reportingPeriod->delete();
 
-        return redirect()->route('settings.periods')->with('status', "{$name} has been removed.");
+        return redirect()->route('settings.periods', $resourceType)->with('status', "{$name} has been removed.");
     }
 
     private function periodRules(string $prefix = ''): array

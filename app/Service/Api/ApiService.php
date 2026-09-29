@@ -21,6 +21,12 @@ class ApiService
      */
     private ?array $resourcesCache = null;
 
+    /**
+     * permittedResourceTypes() gets called independently by the nav composer
+     * and by the resource-types index page - memoized for the same reason.
+     */
+    private ?array $permittedResourceTypesCache = null;
+
     public function __construct(
         ?string $bearer = null,
         private readonly ?string $resourceTypeId = null,
@@ -61,7 +67,7 @@ class ApiService
      */
     public function permittedResourceTypes(): array
     {
-        return $this->http->get(Uri::permittedResourceTypes());
+        return $this->permittedResourceTypesCache ??= $this->http->get(Uri::permittedResourceTypes());
     }
 
     public function createResourceType(string $name, string $description, string $itemTypeId): array

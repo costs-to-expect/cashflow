@@ -15,7 +15,7 @@
             <span class="text-base font-semibold text-white">{{ config('app.name') }}</span>
 
             @auth
-                <a href="{{ route('dashboard') }}" class="text-sm text-white/70 hover:text-white">Go to dashboard</a>
+                <a href="{{ route('resource-types.index') }}" class="text-sm text-white/70 hover:text-white">Go to dashboard</a>
             @else
                 <a href="{{ route('auth.sign-in') }}" class="text-sm text-white/70 hover:text-white">Sign in</a>
             @endauth
@@ -44,7 +44,7 @@
 
             <div class="mt-8">
                 @auth
-                    <a href="{{ route('dashboard') }}" class="inline-block rounded-md bg-brand-500 px-4 py-2 text-base font-medium text-white hover:bg-brand-700">Go to dashboard</a>
+                    <a href="{{ route('resource-types.index') }}" class="inline-block rounded-md bg-brand-500 px-4 py-2 text-base font-medium text-white hover:bg-brand-700">Go to dashboard</a>
                 @else
                     <a href="{{ route('auth.sign-in') }}" class="inline-block rounded-md bg-brand-500 px-4 py-2 text-base font-medium text-white hover:bg-brand-700">Sign in</a>
                 @endauth
@@ -101,7 +101,7 @@
                     <h2 class="text-sm font-semibold text-gray-900">{{ config('app.name') }}</h2>
                     <ul class="mt-3 space-y-2 text-sm">
                         @auth
-                            <li><a href="{{ route('dashboard') }}" class="text-gray-500 hover:text-gray-700">Dashboard</a></li>
+                            <li><a href="{{ route('resource-types.index') }}" class="text-gray-500 hover:text-gray-700">Dashboard</a></li>
                         @else
                             <li><a href="{{ route('auth.sign-in') }}" class="text-gray-500 hover:text-gray-700">Sign in</a></li>
                         @endauth

@@ -8,12 +8,13 @@ use App\Actions\Expense\CreateExpense;
 use App\Actions\Expense\DeleteExpense;
 use App\Actions\Expense\UpdateExpense;
 use App\Http\Controllers\Controller;
+use App\Models\ResourceType;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
 class ExpenseController extends Controller
 {
-    public function store(Request $request, CreateExpense $createExpense): RedirectResponse
+    public function store(Request $request, ResourceType $resourceType, CreateExpense $createExpense): RedirectResponse
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
@@ -46,14 +47,14 @@ class ExpenseController extends Controller
         return $this->redirectForApiResult(
             $result,
             'resources.show',
-            ['resource_id' => $firstResourceId],
+            ['resourceType' => $resourceType, 'resource_id' => $firstResourceId],
             count($validated['allocations']) > 1
                 ? "{$validated['name']} has been added and split across {$this->count($validated)} ".strtolower(config('app.api.resource_term_plural')).'.'
                 : "{$validated['name']} has been added.",
         );
     }
 
-    public function update(Request $request, string $resource_id, string $item_id, UpdateExpense $updateExpense): RedirectResponse
+    public function update(Request $request, ResourceType $resourceType, string $resource_id, string $item_id, UpdateExpense $updateExpense): RedirectResponse
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
@@ -74,16 +75,16 @@ class ExpenseController extends Controller
         return $this->redirectForApiResult(
             $result,
             'resources.show',
-            ['resource_id' => $resource_id],
+            ['resourceType' => $resourceType, 'resource_id' => $resource_id],
             "{$validated['name']} has been updated.",
         );
     }
 
-    public function destroy(string $resource_id, string $item_id, DeleteExpense $deleteExpense): RedirectResponse
+    public function destroy(ResourceType $resourceType, string $resource_id, string $item_id, DeleteExpense $deleteExpense): RedirectResponse
     {
         $result = $deleteExpense($resource_id, $item_id);
 
-        return $this->redirectForApiResult($result, 'resources.show', ['resource_id' => $resource_id], 'The expense has been deleted.');
+        return $this->redirectForApiResult($result, 'resources.show', ['resourceType' => $resourceType, 'resource_id' => $resource_id], 'The expense has been deleted.');
     }
 
     private function count(array $validated): int

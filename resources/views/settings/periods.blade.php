@@ -14,7 +14,7 @@
 
     <div class="mb-8 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
         <h2 class="mb-4 text-sm font-semibold text-gray-900">Add period</h2>
-        <form method="POST" action="{{ route('settings.periods.store') }}" class="grid items-end gap-4 sm:grid-cols-6">
+        <form method="POST" action="{{ route('settings.periods.store', $currentResourceType) }}" class="grid items-end gap-4 sm:grid-cols-6">
             @csrf
             <div class="sm:col-span-2">
                 <x-helper.form.field.text name="name" title="Name" required :value="old('name')" />
@@ -35,7 +35,7 @@
         <div class="space-y-6">
             @foreach ($periods as $period)
                 <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-                    <form method="POST" action="{{ route('settings.periods.update', $period) }}" class="grid items-end gap-4 sm:grid-cols-6">
+                    <form method="POST" action="{{ route('settings.periods.update', [$currentResourceType, $period]) }}" class="grid items-end gap-4 sm:grid-cols-6">
                         @csrf
                         <div class="sm:col-span-2">
                             <x-helper.form.field.text :name="'periods['.$period->id.'][name]'" title="Name" required
@@ -54,7 +54,7 @@
                         </div>
                     </form>
 
-                    <form method="POST" action="{{ route('settings.periods.delete', $period) }}" class="mt-3" onsubmit="return confirm('Delete this reporting period?');">
+                    <form method="POST" action="{{ route('settings.periods.delete', [$currentResourceType, $period]) }}" class="mt-3" onsubmit="return confirm('Delete this reporting period?');">
                         @csrf
                         <x-button variant="danger">Delete</x-button>
                     </form>
