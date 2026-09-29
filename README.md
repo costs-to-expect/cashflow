@@ -1,4 +1,4 @@
-# Costs to Expect: Expense
+# Costs to Expect: Cashflow
 
 A lightweight Laravel app for recording allocated expenses against the
 [Costs to Expect API](https://github.com/costs-to-expect/api)'s
