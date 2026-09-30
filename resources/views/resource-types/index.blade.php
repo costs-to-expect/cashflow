@@ -1,7 +1,7 @@
 <x-layouts.app title="Resource types">
     <div class="mb-6 flex items-center justify-between">
         <h1 class="text-lg font-semibold text-gray-900">Resource types</h1>
-        <a href="{{ route('resource-types.create') }}"><x-button>New resource type</x-button></a>
+        <x-button :href="route('resource-types.create')">New resource type</x-button>
     </div>
 
     <div class="grid gap-4 sm:grid-cols-2">

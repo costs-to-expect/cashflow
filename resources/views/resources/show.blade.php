@@ -5,8 +5,8 @@
             <p class="text-sm text-gray-500">{{ $resource['description'] }}</p>
         </div>
         <div class="flex gap-2">
-            <a href="{{ route('expenses.create', ['resourceType' => $currentResourceType, 'resource_id' => $resource['id']]) }}"><x-button>Add Expense for {{ $resource['name'] }}</x-button></a>
-            <a href="{{ route('recurring.index', $currentResourceType) }}"><x-button variant="secondary">Recurring</x-button></a>
+            <x-button :href="route('expenses.create', ['resourceType' => $currentResourceType, 'resource_id' => $resource['id']])">Add Expense for {{ $resource['name'] }}</x-button>
+            <x-button variant="secondary" :href="route('recurring.index', $currentResourceType)">Recurring</x-button>
         </div>
     </div>
 

@@ -1,7 +1,7 @@
 <x-layouts.app title="Recurring expenses">
     <div class="mb-6 flex items-center justify-between">
         <h1 class="text-lg font-semibold text-gray-900">Recurring expenses</h1>
-        <a href="{{ route('recurring.create', $currentResourceType) }}"><x-button>Add recurring expense</x-button></a>
+        <x-button :href="route('recurring.create', $currentResourceType)">Add recurring expense</x-button>
     </div>
 
     @if ($recurringExpenses->isEmpty())

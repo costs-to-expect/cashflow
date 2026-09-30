@@ -30,7 +30,8 @@ hard-coded two-user allow-list and no public registration.
   recurring concept.
 - **Reporting periods** — define recurring day/month-boundary windows (e.g.
   "6 April → 5 April") and see running totals for the current instance of
-  each one, per resource and combined across all resources.
+  each one, per resource and combined across all resources, alongside an
+  all-time total across every resource.
 - **Default split, categories, and resource naming** — configurable from
   Settings, per resource type, all stored locally and layered on top of the
   API's own data.

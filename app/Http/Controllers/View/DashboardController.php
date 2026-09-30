@@ -37,6 +37,8 @@ class DashboardController extends Controller
             fn (ReportingPeriod $period) => $this->periodTotal($period, fn (array $query) => $this->api->resourceTypeItemsSummary($query))
         )->all();
 
+        $overallPeriodTotals[] = $this->allTimeTotal(fn (array $query) => $this->api->resourceTypeItemsSummary($query));
+
         return view('dashboard.index', [
             'resources' => $resources,
             'recentByResource' => $recentByResource,
@@ -57,21 +59,45 @@ class DashboardController extends Controller
             'filter' => 'effective_date:'.$start->toDateString().':'.$end->toDateString(),
         ]);
 
-        // One row per currency present in the range - almost always just
-        // one currency, but a resource could easily have the odd expense in
-        // another currency, and those must never be silently added together.
-        $totals = $summary['status'] === 200
+        return [
+            'name' => $period->name,
+            'totals' => $this->currencyTotals($summary),
+            'starts_on' => $start,
+            'ends_on' => $end,
+            'all_time' => false,
+        ];
+    }
+
+    /**
+     * Everything recorded, regardless of date. The API's summary endpoints
+     * return an all-time total when called with no filter at all, so unlike
+     * periodTotal() there's no date range to build.
+     *
+     * @param  callable(array<string, mixed>): array  $fetchSummary
+     */
+    private function allTimeTotal(callable $fetchSummary): array
+    {
+        return [
+            'name' => 'All time',
+            'totals' => $this->currencyTotals($fetchSummary([])),
+            'starts_on' => null,
+            'ends_on' => null,
+            'all_time' => true,
+        ];
+    }
+
+    /**
+     * One row per currency in the summary - almost always just one
+     * currency, but a resource could easily have the odd expense in
+     * another currency, and those must never be silently added together.
+     */
+    private function currencyTotals(array $summary): array
+    {
+        return $summary['status'] === 200
             ? collect($summary['content'])->map(fn (array $row) => [
                 'currency' => $row['currency']['code'],
                 'total' => $row['subtotal'],
             ])->all()
             : [];
-
-        return [
-            'name' => $period->name,
-            'totals' => $totals,
-            'starts_on' => $start,
-            'ends_on' => $end,
-        ];
     }
 }

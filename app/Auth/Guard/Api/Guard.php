@@ -21,7 +21,13 @@ class Guard implements GuardContract
         private readonly Request $request,
     ) {}
 
-    public function attempt(string $email, string $password): bool
+    /**
+     * $remember controls how long the bearer/user cookies last: checked
+     * gives the usual 30-day persistent cookie, unchecked gives a plain
+     * session cookie (Cookie::queue's $minutes = 0) that goes away when the
+     * browser closes.
+     */
+    public function attempt(string $email, string $password, bool $remember = false): bool
     {
         $email = strtolower(trim($email));
 
@@ -41,7 +47,7 @@ class Guard implements GuardContract
             return false;
         }
 
-        $lifetime = 60 * 24 * 30;
+        $lifetime = $remember ? 60 * 24 * 30 : 0;
 
         Cookie::queue(config('app.api.cookie_bearer'), (string) $response['content']['token'], $lifetime);
         Cookie::queue(config('app.api.cookie_user'), (string) $response['content']['id'], $lifetime);

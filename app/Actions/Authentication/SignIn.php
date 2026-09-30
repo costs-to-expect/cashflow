@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Auth;
 
 class SignIn
 {
-    public function __invoke(string $email, string $password): ApiActionResult
+    public function __invoke(string $email, string $password, bool $remember = false): ApiActionResult
     {
         if (trim($email) === '' || trim($password) === '') {
             return ApiActionResult::validationFailed([
@@ -21,7 +21,7 @@ class SignIn
         /** @var Guard $guard */
         $guard = Auth::guard('web');
 
-        if ($guard->attempt($email, $password)) {
+        if ($guard->attempt($email, $password, $remember)) {
             return ApiActionResult::success();
         }
 
