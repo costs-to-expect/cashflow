@@ -7,6 +7,7 @@ namespace App\Http\Controllers\View;
 use App\Http\Controllers\Controller;
 use App\Models\ResourceType;
 use App\Service\Api\ApiService;
+use App\Service\Api\RequestPool;
 use App\Service\Reporting\PeriodTotals;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -33,28 +34,41 @@ class ResourceController extends Controller
 
     public function show(Request $request, ResourceType $resourceType, string $resource_id): View
     {
-        $resource = $this->api->resource($resource_id);
-
-        abort_if($resource['status'] !== 200, 404, 'That resource could not be found.');
-
         $page = max(1, (int) $request->query('page', 1));
         $perPage = 25;
 
         $categoriesEnabled = $resourceType->categoriesEnabled();
 
-        $items = $this->api->items($resource_id, [
-            'sort' => 'effective_date:desc',
-            'limit' => $perPage,
-            'offset' => ($page - 1) * $perPage,
-            // The labels are only shown while categories are turned on.
-            ...($categoriesEnabled ? ['include-categories' => 'true', 'include-subcategories' => 'true'] : []),
-        ]);
+        // Nothing here depends on anything else's response, so it all goes
+        // in one pool - along with what the nav needs. A resource that
+        // doesn't exist costs a few wasted requests, but it's only a 404.
+        $responses = $this->api->pool(function (RequestPool $pool) use ($resourceType, $resource_id, $page, $perPage, $categoriesEnabled) {
+            $pool->resource('resource', $resource_id);
+
+            $pool->items('items', $resource_id, [
+                'sort' => 'effective_date:desc',
+                'limit' => $perPage,
+                'offset' => ($page - 1) * $perPage,
+                // The labels are only shown while categories are turned on.
+                ...($categoriesEnabled ? ['include-categories' => 'true', 'include-subcategories' => 'true'] : []),
+            ]);
+
+            $this->periodTotals->poolResource($pool, $resourceType, $resource_id);
+
+            $pool->navigation();
+        });
+
+        $resource = $responses['resource'];
+
+        abort_if($resource['status'] !== 200, 404, 'That resource could not be found.');
+
+        $items = $responses['items'];
 
         return view('resources.show', [
             'categoriesEnabled' => $categoriesEnabled,
             'resource' => $resource['content'],
-            'periodTotals' => $this->periodTotals->forResource($resourceType, $resource_id),
-            'items' =>$items['status'] === 200 ? $items['content'] : [],
+            'periodTotals' => $this->periodTotals->forResource($resourceType, $resource_id, $responses),
+            'items' => $items['status'] === 200 ? $items['content'] : [],
             'page' => $page,
             'hasMore' => $items['status'] === 200 && count($items['content']) === $perPage,
         ]);

@@ -21,6 +21,21 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Pooled request concurrency
+    |--------------------------------------------------------------------------
+    |
+    | The most GET/HEAD requests a pool (see App\Service\Api\Http::pool())
+    | will have in flight at once; the rest queue behind them. Pooling makes
+    | a page faster, it doesn't send fewer requests, so keep this in mind
+    | against the API's rate limit (currently 60 requests a minute). 0 means
+    | no cap.
+    |
+    */
+
+    'pool_concurrency' => (int) env('API_POOL_CONCURRENCY', 6),
+
+    /*
+    |--------------------------------------------------------------------------
     | Resource terminology
     |--------------------------------------------------------------------------
     |

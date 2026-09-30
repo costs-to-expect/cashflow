@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Service\Api;
 
+use Closure;
+
 /**
  * The single entry point for talking to the Costs to Expect API. Bound as a
  * singleton per-request by ApiServiceProvider, with the bearer token and the
@@ -33,6 +35,45 @@ class ApiService
         private readonly ?string $itemSubtypeId = null,
     ) {
         $this->http = new Http($bearer);
+    }
+
+    /**
+     * Sends read-only requests concurrently, see Http::pool(). The callback
+     * is handed a RequestPool to describe them on, and the responses come
+     * back keyed the same way the requests were. Anything the memoized
+     * calls (resources(), permittedResourceTypes()) have already fetched
+     * this request is used as is rather than fetched again, and what a pool
+     * does fetch of them is memoized for the calls that follow.
+     *
+     * @param  Closure(RequestPool): mixed  $define
+     * @return array<string, array>
+     */
+    public function pool(Closure $define): array
+    {
+        $pool = new RequestPool($this->resourceTypeId);
+        $define($pool);
+
+        $requests = $pool->requests();
+        $responses = [];
+
+        $memoized = [
+            RequestPool::RESOURCES => $this->resourcesCache,
+            RequestPool::PERMITTED_RESOURCE_TYPES => $this->permittedResourceTypesCache,
+        ];
+
+        foreach ($memoized as $key => $cached) {
+            if ($cached !== null && isset($requests[$key])) {
+                $responses[$key] = $cached;
+                unset($requests[$key]);
+            }
+        }
+
+        $responses += $this->http->pool($requests);
+
+        $this->resourcesCache ??= $responses[RequestPool::RESOURCES] ?? null;
+        $this->permittedResourceTypesCache ??= $responses[RequestPool::PERMITTED_RESOURCE_TYPES] ?? null;
+
+        return $responses;
     }
 
     public function signIn(string $email, string $password): array

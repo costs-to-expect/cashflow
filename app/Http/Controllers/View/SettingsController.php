@@ -10,6 +10,7 @@ use App\Models\ReportingPeriod;
 use App\Models\ResourceType;
 use App\Models\Setting;
 use App\Service\Api\ApiService;
+use App\Service\Api\RequestPool;
 use Illuminate\View\View;
 
 class SettingsController extends Controller
@@ -32,10 +33,10 @@ class SettingsController extends Controller
 
     public function defaultSplit(ResourceType $resourceType): View
     {
-        $response = $this->api->resources();
+        $responses = $this->api->pool(fn (RequestPool $pool) => $pool->navigation());
 
         return view('settings.default-split', [
-            'resources' => $response['status'] === 200 ? $response['content'] : [],
+            'resources' => $this->content($responses[RequestPool::RESOURCES]),
             'allocations' => DefaultSplitAllocation::query()->where('resource_type_id', $resourceType->id)->orderBy('sort_order')->get(['resource_id', 'percentage'])->toArray(),
         ]);
     }
@@ -50,12 +51,15 @@ class SettingsController extends Controller
 
     public function categories(ResourceType $resourceType): View
     {
-        $categoriesResponse = $this->api->categories();
-        $categories = $categoriesResponse['status'] === 200 ? $categoriesResponse['content'] : [];
+        // Two waves: the categories (and the nav's needs), then each one's subcategories.
+        $first = $this->api->pool(fn (RequestPool $pool) => $pool->navigation()->categories());
 
-        $categories = collect($categories)->map(function (array $category) {
-            $subcategoriesResponse = $this->api->subcategories($category['id']);
-            $category['subcategories'] = $subcategoriesResponse['status'] === 200 ? $subcategoriesResponse['content'] : [];
+        $categories = $this->content($first[RequestPool::CATEGORIES]);
+
+        $second = $this->api->pool(fn (RequestPool $pool) => $this->poolSubcategories($pool, $categories));
+
+        $categories = collect($categories)->map(function (array $category) use ($second) {
+            $category['subcategories'] = $this->content($second['subcategories.'.$category['id']]);
 
             return $category;
         })->all();

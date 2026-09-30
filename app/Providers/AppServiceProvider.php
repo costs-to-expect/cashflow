@@ -6,6 +6,7 @@ use App\Actions\ResourceType\VisibleResourceTypes;
 use App\Models\ResourceType;
 use App\Models\Setting;
 use App\Service\Api\ApiService;
+use App\Service\Api\RequestPool;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
@@ -24,11 +25,21 @@ class AppServiceProvider extends ServiceProvider
             $resourceTypes = collect();
 
             if (Auth::check()) {
+                $api = app(ApiService::class);
+
                 // No resource type on routes outside one (e.g. the
                 // resource-type picker/create screens) - nothing to list
                 // resources for there.
-                if ($this->currentResourceType() !== null) {
-                    $response = app(ApiService::class)->resources();
+                $hasResourceType = $this->currentResourceType() !== null;
+
+                // Everything the nav needs, fetched together - the calls
+                // below (and VisibleResourceTypes) are then served from the
+                // ApiService's memo, as is anything the page itself already
+                // fetched.
+                $api->pool(fn (RequestPool $pool) => $pool->navigation($hasResourceType));
+
+                if ($hasResourceType) {
+                    $response = $api->resources();
                     $resources = $response['status'] === 200 ? $response['content'] : [];
                 }
 
