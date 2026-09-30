@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="Track allocated expenses for anything you're managing - children, projects, side hustles, a small business - with percentage splitting and recurring costs, built on the Costs to Expect API.">
+    <meta name="description" content="Track allocated expenses or general transactions for anything you're managing - children, projects, side hustles, a small business - with independent resource types, percentage splitting, and recurring costs, built on the Costs to Expect API.">
     <title>{{ config('app.name') }}</title>
     <link rel="icon" sizes="48x48" href="{{ asset('images/favicon.ico') }}">
     <link rel="icon" type="image/png" sizes="192x192" href="{{ asset('images/favicon.png') }}">
@@ -33,12 +33,13 @@
             </h1>
 
             <p class="mx-auto mt-4 max-w-2xl text-lg text-gray-600">
-                Record each resource's expenses once, split by percentage across as many resources as needed,
-                and let recurring costs post themselves &mdash; all backed by the Costs to Expect API.
+                Set up independent resource types for whatever you're tracking &mdash; allocated expenses
+                or general transactions &mdash; record each resource's costs once, split by percentage
+                across as many resources as needed, and let recurring costs post themselves.
             </p>
 
             <p class="mx-auto mt-2 max-w-2xl text-sm text-gray-500">
-                A resource can be anything you're tracking allocated costs for &mdash; children, a project,
+                A resource can be anything you're tracking costs for &mdash; children, a project,
                 a side hustle, a small business, whatever fits.
             </p>
 
@@ -51,7 +52,15 @@
             </div>
         </div>
 
-        <dl class="mt-20 grid grid-cols-1 gap-x-8 gap-y-10 sm:grid-cols-3">
+        <dl class="mt-20 grid grid-cols-1 gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">
+            <div>
+                <dt class="text-base font-semibold text-gray-900">Multiple resource types</dt>
+                <dd class="mt-2 text-sm text-gray-600">
+                    Run as many independent resource types as you need, each choosing expense
+                    tracking or transaction tracking, switchable in a click.
+                </dd>
+            </div>
+
             <div>
                 <dt class="text-base font-semibold text-gray-900">Split by percentage</dt>
                 <dd class="mt-2 text-sm text-gray-600">
