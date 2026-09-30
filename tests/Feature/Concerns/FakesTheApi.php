@@ -32,7 +32,7 @@ trait FakesTheApi
 
         config([
             'app.api.base_url' => 'http://api.test',
-            'app.api.pool_concurrency' => 6,
+            'app.api.pool_concurrency' => 8,
             'app.api.allowed_emails' => ['dean@example.com'],
         ]);
 

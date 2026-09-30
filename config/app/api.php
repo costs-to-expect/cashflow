@@ -25,14 +25,18 @@ return [
     |--------------------------------------------------------------------------
     |
     | The most GET/HEAD requests a pool (see App\Service\Api\Http::pool())
-    | will have in flight at once; the rest queue behind them. Pooling makes
-    | a page faster, it doesn't send fewer requests, so keep this in mind
-    | against the API's rate limit (currently 60 requests a minute). 0 means
-    | no cap.
+    | will have in flight at once; the rest queue behind them. 8 is sized so
+    | the biggest pool a page makes for a single resource type with one
+    | resource and two reporting periods (the resource page's seven) goes
+    | out in one wave - more resources, periods or categories than that
+    | mean extra waves, and raising this removes them. Pooling makes a page
+    | faster, it doesn't send fewer requests, so keep it in mind against the
+    | API's rate limit (60 a minute by default, higher for some accounts).
+    | 0 means no cap.
     |
     */
 
-    'pool_concurrency' => (int) env('API_POOL_CONCURRENCY', 6),
+    'pool_concurrency' => (int) env('API_POOL_CONCURRENCY', 8),
 
     /*
     |--------------------------------------------------------------------------

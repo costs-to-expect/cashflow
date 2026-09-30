@@ -21,7 +21,7 @@ class HttpPoolTest extends TestCase
     {
         parent::setUp();
 
-        config(['app.api.base_url' => 'http://api.test', 'app.api.pool_concurrency' => 6]);
+        config(['app.api.base_url' => 'http://api.test', 'app.api.pool_concurrency' => 8]);
 
         Http::reset();
 

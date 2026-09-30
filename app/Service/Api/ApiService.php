@@ -17,9 +17,10 @@ class ApiService
     private Http $http;
 
     /**
-     * resources() gets called independently by the nav composer and by
-     * whatever page is rendering (dashboard, expense form, ...) - memoized
-     * so a single request only ever fetches it once.
+     * The nav composer and whatever page is rendering (dashboard, expense
+     * form, ...) both need the resources, and the page may have fetched
+     * them in a pool() - memoized so a single request only ever fetches
+     * them once.
      */
     private ?array $resourcesCache = null;
 
@@ -90,16 +91,6 @@ class ApiService
         return $this->http->get(Uri::authUser());
     }
 
-    public function currencies(): array
-    {
-        return $this->http->get(Uri::currencies());
-    }
-
-    public function resourceTypes(): array
-    {
-        return $this->http->get(Uri::resourceTypes());
-    }
-
     /**
      * The resource types the signed-in user currently has access to, per
      * the API's own permission system - used to decide which locally known
@@ -135,11 +126,6 @@ class ApiService
         return $this->resourcesCache ??= $this->http->get(Uri::resources($this->resourceTypeId));
     }
 
-    public function resource(string $resourceId): array
-    {
-        return $this->http->get(Uri::resource($this->resourceTypeId, $resourceId));
-    }
-
     public function createResource(string $name, string $description): array
     {
         return $this->http->post(Uri::resources($this->resourceTypeId), [
@@ -147,46 +133,6 @@ class ApiService
             'description' => $description,
             'item_subtype_id' => $this->itemSubtypeId,
         ]);
-    }
-
-    public function items(string $resourceId, array $query = []): array
-    {
-        return $this->http->get(Uri::items($this->resourceTypeId, $resourceId, $query));
-    }
-
-    /**
-     * Count + subtotal per currency for the given resource, optionally
-     * filtered (e.g. 'filter' => 'effective_date:2026-04-06:2027-04-05') -
-     * computed server-side, so summing a whole reporting period doesn't
-     * mean paging through every matching item.
-     *
-     * Known API issue (ticket filed): the filtered form returns an empty
-     * result for items created moments earlier on a brand new resource,
-     * suspected to be a scheduler/cache job not running locally - works
-     * correctly on established data.
-     *
-     * @param  array<string, mixed>  $query
-     */
-    public function itemsSummary(string $resourceId, array $query = []): array
-    {
-        return $this->http->get(Uri::itemsSummary($this->resourceTypeId, $resourceId, $query));
-    }
-
-    /**
-     * itemsSummary(), aggregated across every resource under the resource
-     * type at once - for a resource-type-wide total (e.g. every resource's
-     * expenses combined) rather than one resource's.
-     *
-     * @param  array<string, mixed>  $query
-     */
-    public function resourceTypeItemsSummary(array $query = []): array
-    {
-        return $this->http->get(Uri::resourceTypeItemsSummary($this->resourceTypeId, $query));
-    }
-
-    public function item(string $resourceId, string $itemId): array
-    {
-        return $this->http->get(Uri::item($this->resourceTypeId, $resourceId, $itemId));
     }
 
     public function createItem(string $resourceId, array $payload): array
@@ -204,11 +150,6 @@ class ApiService
         return $this->http->delete(Uri::item($this->resourceTypeId, $resourceId, $itemId));
     }
 
-    public function categories(): array
-    {
-        return $this->http->get(Uri::categories($this->resourceTypeId));
-    }
-
     public function createCategory(string $name, string $description): array
     {
         return $this->http->post(Uri::categories($this->resourceTypeId), ['name' => $name, 'description' => $description]);
@@ -217,11 +158,6 @@ class ApiService
     public function updateCategory(string $categoryId, string $name, string $description): array
     {
         return $this->http->patch(Uri::category($this->resourceTypeId, $categoryId), ['name' => $name, 'description' => $description]);
-    }
-
-    public function subcategories(string $categoryId): array
-    {
-        return $this->http->get(Uri::subcategories($this->resourceTypeId, $categoryId));
     }
 
     public function createSubcategory(string $categoryId, string $name, string $description): array
