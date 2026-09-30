@@ -13,6 +13,7 @@ use App\Http\Controllers\View\RecurringController as RecurringView;
 use App\Http\Controllers\View\ResourceController as ResourceView;
 use App\Http\Controllers\View\ResourceTypeController as ResourceTypeView;
 use App\Http\Controllers\View\SettingsController as SettingsView;
+use App\Http\Middleware\EnsureCategoriesEnabled;
 use App\Http\Middleware\ResolveResourceType;
 use Illuminate\Support\Facades\Route;
 
@@ -62,11 +63,17 @@ Route::middleware('auth')->group(function () {
         Route::get('/settings/resource-naming', [SettingsView::class, 'resourceNaming'])->name('settings.resource-naming');
         Route::post('/settings/resource-naming', [SettingsAction::class, 'saveResourceNaming'])->name('settings.resource-naming.action');
 
-        Route::get('/settings/categories', [SettingsView::class, 'categories'])->name('settings.categories');
-        Route::post('/settings/categories', [SettingsAction::class, 'storeCategory'])->name('settings.categories.store');
-        Route::post('/settings/categories/{category_id}/update', [SettingsAction::class, 'updateCategory'])->name('settings.categories.update');
-        Route::post('/settings/categories/{category_id}/subcategories', [SettingsAction::class, 'storeSubcategory'])->name('settings.categories.subcategories.store');
-        Route::post('/settings/categories/{category_id}/subcategories/{subcategory_id}/update', [SettingsAction::class, 'updateSubcategory'])->name('settings.categories.subcategories.update');
+        Route::get('/settings/use-categories', [SettingsView::class, 'useCategories'])->name('settings.use-categories');
+        Route::post('/settings/use-categories', [SettingsAction::class, 'saveUseCategories'])->name('settings.use-categories.action');
+
+        // Managing categories only makes sense while they're turned on.
+        Route::middleware(EnsureCategoriesEnabled::class)->group(function () {
+            Route::get('/settings/categories', [SettingsView::class, 'categories'])->name('settings.categories');
+            Route::post('/settings/categories', [SettingsAction::class, 'storeCategory'])->name('settings.categories.store');
+            Route::post('/settings/categories/{category_id}/update', [SettingsAction::class, 'updateCategory'])->name('settings.categories.update');
+            Route::post('/settings/categories/{category_id}/subcategories', [SettingsAction::class, 'storeSubcategory'])->name('settings.categories.subcategories.store');
+            Route::post('/settings/categories/{category_id}/subcategories/{subcategory_id}/update', [SettingsAction::class, 'updateSubcategory'])->name('settings.categories.subcategories.update');
+        });
 
         Route::get('/settings/periods', [SettingsView::class, 'periods'])->name('settings.periods');
         Route::post('/settings/periods', [SettingsAction::class, 'storePeriod'])->name('settings.periods.store');

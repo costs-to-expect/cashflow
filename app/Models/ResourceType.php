@@ -32,6 +32,21 @@ class ResourceType extends Model
         return 'api_resource_type_id';
     }
 
+    /**
+     * Whether expenses in this resource type are tagged with a category and
+     * subcategory. On unless explicitly turned off, so resource types that
+     * existed before the setting keep the fields they always had.
+     */
+    public function categoriesEnabled(): bool
+    {
+        return Setting::get('categories_enabled', '1', $this) === '1';
+    }
+
+    public function setCategoriesEnabled(bool $enabled): void
+    {
+        Setting::set('categories_enabled', $enabled ? '1' : '0', $this);
+    }
+
     public function itemTypeLabel(): string
     {
         return match ($this->item_type) {

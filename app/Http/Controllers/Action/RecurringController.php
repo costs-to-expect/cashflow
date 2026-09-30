@@ -13,12 +13,13 @@ use App\Models\RecurringExpense;
 use App\Models\ResourceType;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 
 class RecurringController extends Controller
 {
     public function store(Request $request, ResourceType $resourceType, CreateRecurringExpense $createRecurringExpense): RedirectResponse
     {
-        $validated = $this->validated($request);
+        $validated = $this->validated($request, $resourceType);
 
         $result = $createRecurringExpense(
             $resourceType,
@@ -27,8 +28,8 @@ class RecurringController extends Controller
                 'description' => $validated['description'] ?? null,
                 'currency_id' => $validated['currency_id'],
                 'total' => $validated['total'],
-                'category_id' => $validated['category_id'] ?: null,
-                'subcategory_id' => $validated['subcategory_id'] ?: null,
+                'category_id' => $validated['category_id'] ?? null,
+                'subcategory_id' => $validated['subcategory_id'] ?? null,
                 'day_of_month' => $validated['day_of_month'],
                 'starts_on' => $validated['starts_on'],
                 'ends_on' => $validated['ends_on'] ?? null,
@@ -43,8 +44,11 @@ class RecurringController extends Controller
     {
         abort_unless($recurringExpense->resource_type_id === $resourceType->id, 404);
 
-        $validated = $this->validated($request);
+        $validated = $this->validated($request, $resourceType);
 
+        // With categories turned off the category keys aren't in $validated,
+        // and are deliberately not defaulted here: UpdateRecurringExpense
+        // reads their absence as "keep the template's stored categorisation".
         $result = $updateRecurringExpense(
             $recurringExpense,
             [
@@ -52,8 +56,7 @@ class RecurringController extends Controller
                 'description' => $validated['description'] ?? null,
                 'currency_id' => $validated['currency_id'],
                 'total' => $validated['total'],
-                'category_id' => $validated['category_id'] ?: null,
-                'subcategory_id' => $validated['subcategory_id'] ?: null,
+                ...Arr::only($validated, ['category_id', 'subcategory_id']),
                 'day_of_month' => $validated['day_of_month'],
                 'starts_on' => $validated['starts_on'],
                 'ends_on' => $validated['ends_on'] ?? null,
@@ -83,15 +86,14 @@ class RecurringController extends Controller
         return redirect()->route('recurring.index', $resourceType)->with('status', "{$name} has been removed.");
     }
 
-    private function validated(Request $request): array
+    private function validated(Request $request, ResourceType $resourceType): array
     {
         return $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'currency_id' => ['required', 'string'],
             'total' => ['required', 'regex:/^\d+(\.\d{1,2})?$/'],
-            'category_id' => ['nullable', 'string'],
-            'subcategory_id' => ['nullable', 'string'],
+            ...$this->categoryRules($resourceType),
             'day_of_month' => ['required', 'integer', 'min:1', 'max:31'],
             'starts_on' => ['required', 'date'],
             'ends_on' => ['nullable', 'date', 'after_or_equal:starts_on'],

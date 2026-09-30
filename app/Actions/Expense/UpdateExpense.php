@@ -11,8 +11,15 @@ class UpdateExpense
 {
     public function __construct(private readonly ApiService $api) {}
 
+    /**
+     * Category/subcategory are only synced when the payload carries them. A
+     * resource type with categories turned off doesn't send them, and an
+     * absent key must leave whatever the item already has untouched - not
+     * clear it - so turning categories back on finds them still there.
+     */
     public function __invoke(string $resourceId, string $itemId, array $payload): ApiActionResult
     {
+        $syncCategories = array_key_exists('category_id', $payload);
         $categoryId = $payload['category_id'] ?? null;
         $subcategoryId = $payload['subcategory_id'] ?? null;
         unset($payload['category_id'], $payload['subcategory_id']);
@@ -36,7 +43,9 @@ class UpdateExpense
             return ApiActionResult::failed('Unexpected status '.$response['status'].' updating the expense.');
         }
 
-        $this->syncCategory($resourceId, $itemId, $categoryId, $subcategoryId);
+        if ($syncCategories) {
+            $this->syncCategory($resourceId, $itemId, $categoryId, $subcategoryId);
+        }
 
         return ApiActionResult::success();
     }

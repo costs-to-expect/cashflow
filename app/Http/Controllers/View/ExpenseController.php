@@ -19,12 +19,14 @@ class ExpenseController extends Controller
     {
         $resources = $this->resources();
         $currencies = $this->sortCurrenciesGbpFirst($this->currencies());
-        $categories = $this->categories();
+        $categoriesEnabled = $resourceType->categoriesEnabled();
+        $categories = $categoriesEnabled ? $this->categories() : [];
 
         return view('expenses.create', [
             'resources' => $resources,
             'currencies' => $currencies,
             'defaultCurrencyId' => $this->resolveDefaultCurrencyId($currencies),
+            'categoriesEnabled' => $categoriesEnabled,
             'categories' => $categories,
             'subcategoriesByCategory' => $this->subcategoriesByCategory($categories),
             'preselectedResourceId' => $request->query('resource_id'),
@@ -40,16 +42,21 @@ class ExpenseController extends Controller
 
         abort_if($item['status'] !== 200, 404, 'That expense could not be found.');
 
-        [$currentCategoryId, $currentSubcategoryId] = $this->currentCategorisation($resource_id, $item_id);
+        $categoriesEnabled = $resourceType->categoriesEnabled();
+
+        [$currentCategoryId, $currentSubcategoryId] = $categoriesEnabled
+            ? $this->currentCategorisation($resource_id, $item_id)
+            : [null, null];
 
         $resources = $this->resources();
-        $categories = $this->categories();
+        $categories = $categoriesEnabled ? $this->categories() : [];
 
         return view('expenses.edit', [
             'resourceId' => $resource_id,
             'item' => $item['content'],
             'resources' => $resources,
             'currencies' => $this->sortCurrenciesGbpFirst($this->currencies()),
+            'categoriesEnabled' => $categoriesEnabled,
             'categories' => $categories,
             'subcategoriesByCategory' => $this->subcategoriesByCategory($categories),
             'currentCategoryId' => $currentCategoryId,

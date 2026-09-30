@@ -13,7 +13,7 @@
                     <div class="mt-5"><x-expense.date-pill :value="now()->toDateString()" /></div>
                 </x-hero>
 
-                <x-expense.details :categories="$categories" :subcategories-by-category="$subcategoriesByCategory" :name-suggestions="$nameSuggestions" />
+                <x-expense.details :categories-enabled="$categoriesEnabled" :categories="$categories" :subcategories-by-category="$subcategoriesByCategory" :name-suggestions="$nameSuggestions" />
 
                 <x-expense.split :resources="$resources" :term="$resourceTermSingular" :default-split="$defaultSplit"
                     :allocations="old('allocations', $defaultAllocations ?? [['resource_id' => $preselectedResourceId ?? $resources[0]['id'], 'percentage' => 100]])" />

@@ -40,15 +40,18 @@ class ResourceController extends Controller
         $page = max(1, (int) $request->query('page', 1));
         $perPage = 25;
 
+        $categoriesEnabled = $resourceType->categoriesEnabled();
+
         $items = $this->api->items($resource_id, [
             'sort' => 'effective_date:desc',
             'limit' => $perPage,
             'offset' => ($page - 1) * $perPage,
-            'include-categories' => 'true',
-            'include-subcategories' => 'true',
+            // The labels are only shown while categories are turned on.
+            ...($categoriesEnabled ? ['include-categories' => 'true', 'include-subcategories' => 'true'] : []),
         ]);
 
         return view('resources.show', [
+            'categoriesEnabled' => $categoriesEnabled,
             'resource' => $resource['content'],
             'periodTotals' => $this->periodTotals->forResource($resourceType, $resource_id),
             'items' =>$items['status'] === 200 ? $items['content'] : [],

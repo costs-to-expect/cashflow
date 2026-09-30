@@ -44,6 +44,19 @@ class SettingsController extends Controller
         return redirect()->route('settings.resource-naming', $resourceType)->with('status', 'Naming saved.');
     }
 
+    public function saveUseCategories(Request $request, ResourceType $resourceType): RedirectResponse
+    {
+        $validated = $request->validate([
+            'enabled' => ['required', 'boolean'],
+        ]);
+
+        $enabled = (bool) $validated['enabled'];
+
+        $resourceType->setCategoriesEnabled($enabled);
+
+        return redirect()->route('settings.use-categories', $resourceType)->with('status', $enabled ? 'Categories turned on.' : 'Categories turned off.');
+    }
+
     public function storeCategory(Request $request, ResourceType $resourceType, CreateCategory $createCategory): RedirectResponse
     {
         $validated = $request->validate([

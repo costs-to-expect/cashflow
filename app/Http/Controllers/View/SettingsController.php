@@ -16,14 +16,18 @@ class SettingsController extends Controller
 {
     public function __construct(private readonly ApiService $api) {}
 
-    /**
-     * $resourceType isn't used directly here, but a route-bound model
-     * parameter must be declared on every {resourceType}-prefixed route's
-     * controller method - see the note on ResourceController::create().
-     */
     public function index(ResourceType $resourceType): View
     {
-        return view('settings.index');
+        return view('settings.index', [
+            'categoriesEnabled' => $resourceType->categoriesEnabled(),
+        ]);
+    }
+
+    public function useCategories(ResourceType $resourceType): View
+    {
+        return view('settings.use-categories', [
+            'enabled' => $resourceType->categoriesEnabled(),
+        ]);
     }
 
     public function defaultSplit(ResourceType $resourceType): View

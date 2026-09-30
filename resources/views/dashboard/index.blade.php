@@ -100,7 +100,7 @@
                                             <p class="truncate text-sm font-medium text-gray-900">{{ $expense['name'] }}</p>
                                             <p class="text-xs text-gray-500">
                                                 {{ \Illuminate\Support\Carbon::parse($expense['effective_date'])->format('j M') }}
-                                                @if (count($expense['categories'] ?? []) > 0)
+                                                @if ($categoriesEnabled && count($expense['categories'] ?? []) > 0)
                                                     · {{ $expense['categories'][0]['subcategories'][0]['name'] ?? $expense['categories'][0]['name'] }}
                                                 @endif
                                             </p>

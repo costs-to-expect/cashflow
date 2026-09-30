@@ -15,7 +15,7 @@ class CreateRecurringExpense
     public function __construct(private readonly NextRunDate $nextRunDate) {}
 
     /**
-     * @param  array{name: string, description: ?string, currency_id: string, total: string, category_id: ?string, subcategory_id: ?string, day_of_month: int, starts_on: string, ends_on: ?string}  $expense
+     * @param  array{name: string, description: ?string, currency_id: string, total: string, category_id?: ?string, subcategory_id?: ?string, day_of_month: int, starts_on: string, ends_on: ?string}  $expense
      * @param  array<int, array{resource_id: string, percentage: int}>  $allocations
      */
     public function __invoke(ResourceType $resourceType, array $expense, array $allocations): ApiActionResult
@@ -32,8 +32,8 @@ class CreateRecurringExpense
                 'description' => $expense['description'],
                 'currency_id' => $expense['currency_id'],
                 'total' => $expense['total'],
-                'category_id' => $expense['category_id'],
-                'subcategory_id' => $expense['subcategory_id'],
+                'category_id' => $expense['category_id'] ?? null,
+                'subcategory_id' => $expense['subcategory_id'] ?? null,
                 'frequency' => 'monthly',
                 'day_of_month' => $dayOfMonth,
                 'starts_on' => $startsOn,

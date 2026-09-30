@@ -27,12 +27,14 @@ class RecurringController extends Controller
     public function create(ResourceType $resourceType): View
     {
         $currencies = $this->sortCurrenciesGbpFirst($this->currencies());
-        $categories = $this->categories();
+        $categoriesEnabled = $resourceType->categoriesEnabled();
+        $categories = $categoriesEnabled ? $this->categories() : [];
 
         return view('recurring.create', [
             'resources' => $this->resources(),
             'currencies' => $currencies,
             'defaultCurrencyId' => $this->resolveDefaultCurrencyId($currencies),
+            'categoriesEnabled' => $categoriesEnabled,
             'categories' => $categories,
             'subcategoriesByCategory' => $this->subcategoriesByCategory($categories),
             'defaultSplit' => DefaultSplitAllocation::query()->where('resource_type_id', $resourceType->id)->orderBy('sort_order')->get(['resource_id', 'percentage'])->toArray(),
@@ -44,12 +46,14 @@ class RecurringController extends Controller
         abort_unless($recurringExpense->resource_type_id === $resourceType->id, 404);
 
         $recurringExpense->load('allocations');
-        $categories = $this->categories();
+        $categoriesEnabled = $resourceType->categoriesEnabled();
+        $categories = $categoriesEnabled ? $this->categories() : [];
 
         return view('recurring.edit', [
             'recurringExpense' => $recurringExpense,
             'resources' => $this->resources(),
             'currencies' => $this->sortCurrenciesGbpFirst($this->currencies()),
+            'categoriesEnabled' => $categoriesEnabled,
             'categories' => $categories,
             'subcategoriesByCategory' => $this->subcategoriesByCategory($categories),
         ]);

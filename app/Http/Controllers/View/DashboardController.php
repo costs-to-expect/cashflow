@@ -24,11 +24,18 @@ class DashboardController extends Controller
 
         $overallPeriodTotals = $this->periodTotals->forResourceType($resourceType);
 
+        $categoriesEnabled = $resourceType->categoriesEnabled();
+
         $recentByResource = [];
         $periodTotalsByResource = [];
 
         foreach ($resources as $resource) {
-            $items = $this->api->items($resource['id'], ['sort' => 'effective_date:desc', 'limit' => 5, 'include-categories' => 'true', 'include-subcategories' => 'true']);
+            $items = $this->api->items($resource['id'], [
+                'sort' => 'effective_date:desc',
+                'limit' => 5,
+                // The labels are only shown while categories are turned on.
+                ...($categoriesEnabled ? ['include-categories' => 'true', 'include-subcategories' => 'true'] : []),
+            ]);
             $recentByResource[$resource['id']] = $items['status'] === 200 ? $items['content'] : [];
 
             $periodTotalsByResource[$resource['id']] = PeriodTotals::withShares(
@@ -42,6 +49,7 @@ class DashboardController extends Controller
             'recentByResource' => $recentByResource,
             'periodTotalsByResource' => $periodTotalsByResource,
             'overallPeriodTotals' => $overallPeriodTotals,
+            'categoriesEnabled' => $categoriesEnabled,
             'apiError' => $response['status'] !== 200,
         ]);
     }

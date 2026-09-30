@@ -18,7 +18,7 @@
                 </div>
             </section>
 
-            <x-expense.details :categories-enabled="$categoriesEnabled" :categories="$categories" :subcategories-by-category="$subcategoriesByCategory"
+            <x-expense.details :categories="$categories" :subcategories-by-category="$subcategoriesByCategory"
                 :name="$recurringExpense->name" :description="$recurringExpense->description"
                 :category-id="$recurringExpense->category_id" :subcategory-id="$recurringExpense->subcategory_id" />
 

@@ -22,8 +22,7 @@ class ExpenseController extends Controller
             'effective_date' => ['required', 'date'],
             'currency_id' => ['required', 'string'],
             'total' => ['required', 'regex:/^\d+(\.\d{1,2})?$/'],
-            'category_id' => ['nullable', 'string'],
-            'subcategory_id' => ['nullable', 'string'],
+            ...$this->categoryRules($resourceType),
             'allocations' => ['required', 'array', 'min:1'],
             'allocations.*.resource_id' => ['required', 'string'],
             'allocations.*.percentage' => ['required', 'integer', 'min:1', 'max:100'],
@@ -36,8 +35,8 @@ class ExpenseController extends Controller
                 'effective_date' => $validated['effective_date'],
                 'currency_id' => $validated['currency_id'],
                 'total' => $validated['total'],
-                'category_id' => $validated['category_id'] ?: null,
-                'subcategory_id' => $validated['subcategory_id'] ?: null,
+                'category_id' => $validated['category_id'] ?? null,
+                'subcategory_id' => $validated['subcategory_id'] ?? null,
             ],
             $validated['allocations'],
         );
@@ -63,13 +62,11 @@ class ExpenseController extends Controller
             'currency_id' => ['required', 'string'],
             'total' => ['required', 'regex:/^\d+(\.\d{1,2})?$/'],
             'percentage' => ['required', 'integer', 'min:1', 'max:100'],
-            'category_id' => ['nullable', 'string'],
-            'subcategory_id' => ['nullable', 'string'],
+            ...$this->categoryRules($resourceType),
         ]);
 
-        $validated['category_id'] = $validated['category_id'] ?: null;
-        $validated['subcategory_id'] = $validated['subcategory_id'] ?: null;
-
+        // With categories turned off the category keys aren't in $validated at
+        // all, which UpdateExpense reads as "leave the categorisation alone".
         $result = $updateExpense($resource_id, $item_id, $validated);
 
         return $this->redirectForApiResult(

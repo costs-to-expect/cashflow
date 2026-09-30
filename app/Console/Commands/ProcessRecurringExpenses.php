@@ -70,6 +70,11 @@ class ProcessRecurringExpenses extends Command
 
             $createExpense = $this->createExpenseFor($recurringExpense->resourceType);
 
+            // A resource type with categories turned off posts uncategorised
+            // expenses; the template keeps its stored categorisation, so
+            // turning categories back on resumes using it.
+            $categoriesEnabled = $recurringExpense->resourceType->categoriesEnabled();
+
             $result = $createExpense(
                 [
                     'name' => $recurringExpense->name,
@@ -77,8 +82,8 @@ class ProcessRecurringExpenses extends Command
                     'effective_date' => $recurringExpense->next_run_date->toDateString(),
                     'currency_id' => $recurringExpense->currency_id,
                     'total' => (string) $recurringExpense->total,
-                    'category_id' => $recurringExpense->category_id,
-                    'subcategory_id' => $recurringExpense->subcategory_id,
+                    'category_id' => $categoriesEnabled ? $recurringExpense->category_id : null,
+                    'subcategory_id' => $categoriesEnabled ? $recurringExpense->subcategory_id : null,
                 ],
                 $recurringExpense->allocations->map(fn ($allocation) => [
                     'resource_id' => $allocation->resource_id,

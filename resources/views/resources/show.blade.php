@@ -52,7 +52,7 @@
                                 @endif
                                 <p class="mt-0.5 text-xs text-gray-500">
                                     {{ \Illuminate\Support\Carbon::parse($item['effective_date'])->format('D j M') }}
-                                    @if (count($item['categories'] ?? []) > 0)
+                                    @if ($categoriesEnabled && count($item['categories'] ?? []) > 0)
                                         · {{ $item['categories'][0]['name'] }}
                                         @if (count($item['categories'][0]['subcategories'] ?? []) > 0)
                                             &rsaquo; {{ $item['categories'][0]['subcategories'][0]['name'] }}

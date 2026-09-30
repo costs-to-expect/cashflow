@@ -21,7 +21,7 @@
                     </div>
                 </section>
 
-                <x-expense.details :categories-enabled="$categoriesEnabled" :categories="$categories" :subcategories-by-category="$subcategoriesByCategory" />
+                <x-expense.details :categories="$categories" :subcategories-by-category="$subcategoriesByCategory" />
 
                 <x-expense.split :resources="$resources" :term="$resourceTermSingular" :default-split="$defaultSplit"
                     :allocations="old('allocations', [['resource_id' => $resources[0]['id'], 'percentage' => 100]])" />

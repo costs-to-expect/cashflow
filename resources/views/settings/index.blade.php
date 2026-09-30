@@ -9,11 +9,19 @@
                 'icon' => 'M10.5 6a7.5 7.5 0 1 0 7.5 7.5h-7.5V6ZM13.5 10.5H21A7.5 7.5 0 0 0 13.5 3v7.5Z',
             ],
             [
+                'route' => route('settings.use-categories', $currentResourceType),
+                'title' => 'Use categories',
+                'badge' => $categoriesEnabled ? 'On' : 'Off',
+                'description' => 'Whether expenses are tagged with a category and subcategory.',
+                'icon' => 'M10.5 6h9.75M10.5 6a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 1 0-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-9.75 0h9.75',
+            ],
+            // Only worth managing categories while they're turned on.
+            ...($categoriesEnabled ? [[
                 'route' => route('settings.categories', $currentResourceType),
                 'title' => 'Categories',
                 'description' => 'Add and update the categories and subcategories expenses can be tagged with.',
                 'icon' => 'M9.568 3H5.25A2.25 2.25 0 0 0 3 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 0 0 5.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 0 0 9.568 3ZM6 6h.008v.008H6V6Z',
-            ],
+            ]] : []),
             [
                 'route' => route('settings.resource-naming', $currentResourceType),
                 'title' => 'Naming',
@@ -40,7 +48,16 @@
                 </span>
 
                 <span class="min-w-0 flex-1">
-                    <span class="block text-lg font-semibold text-gray-900 group-hover:text-brand-700">{{ $tile['title'] }}</span>
+                    <span class="flex items-center gap-2">
+                        <span class="text-lg font-semibold text-gray-900 group-hover:text-brand-700">{{ $tile['title'] }}</span>
+                        @isset($tile['badge'])
+                            <span @class([
+                                'rounded-full px-2.5 py-0.5 text-xs font-medium',
+                                'bg-brand-tint text-brand-700' => $tile['badge'] === 'On',
+                                'bg-gray-100 text-gray-700' => $tile['badge'] !== 'On',
+                            ])>{{ $tile['badge'] }}</span>
+                        @endisset
+                    </span>
                     <span class="mt-1 block text-sm leading-snug text-gray-600">{{ $tile['description'] }}</span>
                 </span>
 

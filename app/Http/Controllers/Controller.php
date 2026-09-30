@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Actions\ApiActionResult;
+use App\Models\ResourceType;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\MessageBag;
 
@@ -50,6 +51,24 @@ abstract class Controller
         ));
 
         return back()->with('danger', 'Something went wrong talking to the API, please try again.')->withInput();
+    }
+
+    /**
+     * Validation rules for the category/subcategory pair on the expense forms:
+     * both required while the resource type has categories turned on, and no
+     * rules at all while it's off - the fields aren't on the form then, so
+     * anything posted for them is left out of the validated data.
+     */
+    protected function categoryRules(ResourceType $resourceType): array
+    {
+        if (! $resourceType->categoriesEnabled()) {
+            return [];
+        }
+
+        return [
+            'category_id' => ['required', 'string'],
+            'subcategory_id' => ['required', 'string'],
+        ];
     }
 
     /**

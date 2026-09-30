@@ -36,7 +36,10 @@ hard-coded two-user allow-list and no public registration.
   total is shown as a bar.
 - **Default split, categories, and resource naming** — configurable from
   Settings, per resource type, all stored locally and layered on top of the
-  API's own data.
+  API's own data. Categories can be switched off for a resource type, which
+  removes the category and subcategory fields from its forms and the labels
+  from its lists (anything already tagged is kept); while on, both are
+  required.
 
 ## Tech stack
 

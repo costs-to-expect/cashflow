@@ -15,7 +15,7 @@
                 <div class="mt-5"><x-expense.date-pill :value="$item['effective_date']" /></div>
             </x-hero>
 
-            <x-expense.details :categories-enabled="$categoriesEnabled" :categories="$categories" :subcategories-by-category="$subcategoriesByCategory" :name-suggestions="$nameSuggestions"
+            <x-expense.details :categories="$categories" :subcategories-by-category="$subcategoriesByCategory" :name-suggestions="$nameSuggestions"
                 :name="$item['name']" :description="$item['description']" :category-id="$currentCategoryId" :subcategory-id="$currentSubcategoryId" />
 
             <section class="space-y-5 rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-200 sm:p-6">
