@@ -7,22 +7,8 @@
         <p class="text-sm text-gray-600">No {{ strtolower($resourceTermPlural) }} set up yet. <a href="{{ route('resources.create', $currentResourceType) }}" class="text-brand-700 hover:underline">Add one</a> to get started.</p>
     @else
         @php
-            // Colour identity per resource, reused in the hero's share bar and on each card. Full class
-            // strings and hexes (not built up from names) so Tailwind can see them; "hex" is the lighter
-            // shade that stays legible on the dark hero.
-            $palette = [
-                ['bar' => 'bg-indigo-500', 'hex' => '#a5b4fc'],
-                ['bar' => 'bg-rose-500', 'hex' => '#fda4af'],
-                ['bar' => 'bg-emerald-500', 'hex' => '#6ee7b7'],
-                ['bar' => 'bg-amber-500', 'hex' => '#fcd34d'],
-                ['bar' => 'bg-sky-500', 'hex' => '#7dd3fc'],
-                ['bar' => 'bg-orange-500', 'hex' => '#fdba74'],
-            ];
-
-            $colours = [];
-            foreach (array_values($resources) as $index => $resource) {
-                $colours[$resource['id']] = $palette[$index % count($palette)];
-            }
+            // Colour identity per resource, reused in the hero's share bar and on each card.
+            $colours = \App\Support\ResourceColours::forResources($resources);
 
             $showShares = count($resources) > 1;
         @endphp

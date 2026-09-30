@@ -1,4 +1,4 @@
-@props(['name', 'title', 'options', 'required' => false, 'value' => null, 'errorKey' => null])
+@props(['name', 'title', 'options', 'required' => false, 'value' => null, 'hint' => null, 'errorKey' => null])
 
 @php($errorKey ??= $name)
 
@@ -11,10 +11,11 @@
         id="{{ $name }}"
         name="{{ $name }}"
         @if ($required) required @endif
-        {{ $attributes->merge(['class' => 'mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm '.($errors->has($errorKey) ? 'border-red-500 ring-1 ring-red-500' : '')]) }}
+        {{ $attributes->merge(['class' => 'form-control mt-1.5 pr-10 '.($errors->has($errorKey) ? 'form-control-error' : '')]) }}
     >
         @foreach ($options as $optionValue => $label)
             <option value="{{ $optionValue }}" @selected((string) old($errorKey, $value) === (string) $optionValue)>{{ $label }}</option>
         @endforeach
     </select>
+    @if ($hint)<p class="mt-1.5 text-xs text-gray-500">{{ $hint }}</p>@endif
 </div>
