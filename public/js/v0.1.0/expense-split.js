@@ -1,9 +1,10 @@
 /*
- * The add-expense "Who is it for?" section: split toggle, one row per
- * resource (percentage + live amount), an allocation bar and status. Rows
- * are cloned from the server-rendered <template>, so there's one source of
- * markup. (The recurring-expense forms still use expense-form.js's own,
- * older split UI - this only runs where #split-rows exists.)
+ * The "who is it for?" split card (resources/views/components/expense/split.blade.php): split toggle,
+ * one row per resource (percentage + live amount), an allocation bar and status. Rows are cloned from
+ * the server-rendered <template>, so there's one source of markup.
+ *
+ * Used by the expense forms (toggle, amounts from #total / #currency_id) and by the default split
+ * settings page (always split, no amounts) - anything that's missing on the page is simply skipped.
  */
 (function () {
     var root = document.getElementById('split-section');
@@ -13,6 +14,7 @@
         return;
     }
 
+    var alwaysSplit = root.dataset.alwaysSplit === 'true';
     var resources = JSON.parse(container.dataset.resources || '[]');
     var defaultSplit = JSON.parse(container.dataset.defaultSplit || '[]');
 
@@ -46,7 +48,7 @@
     }
 
     function isSplit() {
-        return toggle !== null && toggle.checked;
+        return toggle ? toggle.checked : alwaysSplit;
     }
 
     function formatMoney(value) {
@@ -54,7 +56,7 @@
     }
 
     function currencyCode() {
-        var option = currencySelect.options[currencySelect.selectedIndex];
+        var option = currencySelect ? currencySelect.options[currencySelect.selectedIndex] : null;
 
         return option ? option.text : '';
     }
@@ -124,12 +126,17 @@
 
     function update() {
         var split = isSplit();
-        var total = parseFloat(totalInput.value) || 0;
+        var total = totalInput ? (parseFloat(totalInput.value) || 0) : 0;
         var code = currencyCode();
         var allocated = allocatedPercentage();
 
         root.querySelectorAll('[data-split-only]').forEach(function (element) {
             element.classList.toggle('hidden', !split);
+        });
+
+        // A lone row can't be removed - there'd be nothing left to allocate to.
+        root.querySelectorAll('[data-remove]').forEach(function (button) {
+            button.classList.toggle('hidden', !split || rows().length <= 1);
         });
 
         if (addButton) {
@@ -145,9 +152,13 @@
             var percentage = split ? (parseFloat(percentageInput(row).value) || 0) : 100;
             var resource = resourceById(resourceSelect(row).value);
             var colour = resource ? resource.dot : 'bg-gray-400';
+            var share = row.querySelector('[data-share]');
 
             row.querySelector('.allocation-dot').className = 'allocation-dot size-2.5 shrink-0 rounded-full ' + colour;
-            row.querySelector('[data-share]').textContent = total > 0 ? code + ' ' + formatMoney(total * percentage / 100) : '';
+
+            if (share) {
+                share.textContent = total > 0 ? code + ' ' + formatMoney(total * percentage / 100) : '';
+            }
 
             if (bar) {
                 var segment = document.createElement('span');
@@ -240,8 +251,14 @@
 
     container.addEventListener('input', update);
     container.addEventListener('change', update);
-    totalInput.addEventListener('input', update);
-    currencySelect.addEventListener('change', update);
+
+    if (totalInput) {
+        totalInput.addEventListener('input', update);
+    }
+
+    if (currencySelect) {
+        currencySelect.addEventListener('change', update);
+    }
 
     update();
 })();

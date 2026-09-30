@@ -17,17 +17,9 @@
     @endphp
 
     <div class="mx-auto max-w-2xl">
-        <section class="relative overflow-hidden rounded-3xl bg-linear-to-br from-brand-900 via-brand-700 to-fuchsia-700 p-6 text-white shadow-lg sm:p-8">
-            <div class="pointer-events-none absolute -right-16 -top-16 size-64 rounded-full bg-white/10 blur-3xl"></div>
-            <div class="pointer-events-none absolute -bottom-24 left-1/3 size-72 rounded-full bg-fuchsia-400/20 blur-3xl"></div>
-
-            <div class="relative">
-                <a href="{{ route('resource-types.index') }}" class="text-sm font-medium text-white/70 hover:text-white">&larr; Resource types</a>
-                <p class="mt-4 text-sm font-medium text-white/70">New resource type</p>
-                <h1 class="mt-1 text-3xl font-bold tracking-tight sm:text-4xl">What are you tracking?</h1>
-                <p class="mt-3 max-w-prose text-[15px] leading-relaxed text-white/80">A resource type groups the things you track costs for, like <strong class="font-semibold text-white">Kids</strong> or <strong class="font-semibold text-white">Household</strong>. Each one gets its own resources, categories, reporting periods and default split.</p>
-            </div>
-        </section>
+        <x-hero :back="route('resource-types.index')" back-label="Resource types" eyebrow="New resource type" title="What are you tracking?">
+            <p class="mt-3 max-w-prose text-[15px] leading-relaxed text-white/80">A resource type groups the things you track costs for, like <strong class="font-semibold text-white">Kids</strong> or <strong class="font-semibold text-white">Household</strong>. Each one gets its own resources, categories, reporting periods and default split.</p>
+        </x-hero>
 
         <form method="POST" action="{{ route('resource-types.store') }}" class="mt-6 space-y-6 rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-200 sm:p-6">
             @csrf

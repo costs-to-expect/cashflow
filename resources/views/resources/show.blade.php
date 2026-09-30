@@ -1,40 +1,34 @@
 <x-layouts.app :title="$resource['name']">
     <div data-period-switcher>
-        <section class="relative overflow-hidden rounded-3xl bg-linear-to-br from-brand-900 via-brand-700 to-fuchsia-700 p-5 text-white shadow-lg sm:p-8">
-            <div class="pointer-events-none absolute -right-16 -top-16 size-64 rounded-full bg-white/10 blur-3xl"></div>
-
-            <div class="relative">
-                <a href="{{ route('dashboard', $currentResourceType) }}" class="text-sm font-medium text-white/70 hover:text-white">&larr; Dashboard</a>
-
-                <div class="mt-3 flex items-center gap-3">
-                    <span class="grid size-12 shrink-0 place-items-center rounded-full bg-white/15 text-xl font-bold ring-1 ring-white/30">{{ mb_strtoupper(mb_substr($resource['name'], 0, 1)) }}</span>
-                    <h1 class="text-3xl font-bold tracking-tight sm:text-4xl">{{ $resource['name'] }}</h1>
-                </div>
-
-                @if (filled($resource['description']))
-                    <p class="mt-4 max-w-prose text-[15px] leading-relaxed text-white/80 sm:text-base">{{ $resource['description'] }}</p>
-                @endif
-
-                <div class="mt-6 flex flex-wrap items-end justify-between gap-4">
-                    <div>
-                        @foreach ($periodTotals as $entry)
-                            <div data-period="{{ $entry['key'] }}" @class(['hidden' => ! $loop->first])>
-                                <x-dashboard.amount :totals="$entry['totals']" number="text-4xl font-bold tracking-tight sm:text-5xl" currency="text-xl font-semibold text-white/70" extra="mt-1 text-base font-medium text-white/80" />
-                                <p class="mt-1 text-sm text-white/70"><x-dashboard.period-caption :entry="$entry" /></p>
-                            </div>
-                        @endforeach
-                    </div>
-
-                    <x-dashboard.period-switcher :periods="$periodTotals" class="w-full sm:w-auto" />
-                </div>
-
-                {{-- Stacked full-width on mobile, side by side from sm up. --}}
-                <div class="mt-6 flex flex-col gap-2 sm:flex-row">
-                    <x-button variant="hero" :href="route('expenses.create', ['resourceType' => $currentResourceType, 'resource_id' => $resource['id']])">Add Expense for {{ $resource['name'] }}</x-button>
-                    <x-button variant="ghost" :href="route('recurring.index', $currentResourceType)">Recurring</x-button>
-                </div>
+        <x-hero :back="route('dashboard', $currentResourceType)" back-label="Dashboard">
+            <div class="mt-3 flex items-center gap-3">
+                <span class="grid size-12 shrink-0 place-items-center rounded-full bg-white/15 text-xl font-bold ring-1 ring-white/30">{{ mb_strtoupper(mb_substr($resource['name'], 0, 1)) }}</span>
+                <h1 class="text-3xl font-bold tracking-tight sm:text-4xl">{{ $resource['name'] }}</h1>
             </div>
-        </section>
+
+            @if (filled($resource['description']))
+                <p class="mt-4 max-w-prose text-[15px] leading-relaxed text-white/80 sm:text-base">{{ $resource['description'] }}</p>
+            @endif
+
+            <div class="mt-6 flex flex-wrap items-end justify-between gap-4">
+                <div>
+                    @foreach ($periodTotals as $entry)
+                        <div data-period="{{ $entry['key'] }}" @class(['hidden' => ! $loop->first])>
+                            <x-dashboard.amount :totals="$entry['totals']" number="text-4xl font-bold tracking-tight sm:text-5xl" currency="text-xl font-semibold text-white/70" extra="mt-1 text-base font-medium text-white/80" />
+                            <p class="mt-1 text-sm text-white/70"><x-dashboard.period-caption :entry="$entry" /></p>
+                        </div>
+                    @endforeach
+                </div>
+
+                <x-dashboard.period-switcher :periods="$periodTotals" class="w-full sm:w-auto" />
+            </div>
+
+            {{-- Stacked full-width on mobile, side by side from sm up. --}}
+            <div class="mt-6 flex flex-col gap-2 sm:flex-row">
+                <x-button variant="hero" :href="route('expenses.create', ['resourceType' => $currentResourceType, 'resource_id' => $resource['id']])">Add Expense for {{ $resource['name'] }}</x-button>
+                <x-button variant="ghost" :href="route('recurring.index', $currentResourceType)">Recurring</x-button>
+            </div>
+        </x-hero>
     </div>
 
     @if (count($items) === 0)

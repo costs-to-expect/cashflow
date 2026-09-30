@@ -13,9 +13,7 @@
     <x-layout.navbar />
 
     <div class="flex flex-1 flex-col items-center justify-center px-4 py-12">
-        <div class="w-full max-w-sm">
-            <h1 class="mb-8 text-center text-2xl font-semibold text-gray-900">{{ config('app.name') }}</h1>
-
+        <div class="w-full max-w-md">
             <x-flash />
             <x-form-errors />
 

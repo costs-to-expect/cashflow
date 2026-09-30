@@ -36,9 +36,9 @@
 
             <div class="mt-10">
                 @auth
-                    <a href="{{ route('resource-types.index') }}" class="inline-block rounded-md bg-brand-500 px-6 py-3 text-lg font-medium text-white hover:bg-brand-700">Go to dashboard</a>
+                    <a href="{{ route('resource-types.index') }}" class="inline-block rounded-xl bg-brand-500 px-6 py-3 text-lg font-medium text-white hover:bg-brand-700">Go to dashboard</a>
                 @else
-                    <a href="{{ route('auth.sign-in') }}" class="inline-block rounded-md bg-brand-500 px-6 py-3 text-lg font-medium text-white hover:bg-brand-700">Sign in</a>
+                    <a href="{{ route('auth.sign-in') }}" class="inline-block rounded-xl bg-brand-500 px-6 py-3 text-lg font-medium text-white hover:bg-brand-700">Sign in</a>
                 @endauth
             </div>
         </div>

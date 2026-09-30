@@ -1,132 +1,30 @@
 (function () {
-    // Category -> subcategory cascade (plain <select>s, no framework). Runs
-    // on both the create form (with allocations) and the edit form (without).
+    // Category -> subcategory cascade (plain <select>s, no framework), shared by the expense and
+    // recurring-expense forms, create and edit. The split card has its own script, expense-split.js.
     var categorySelect = document.getElementById('category_id');
     var subcategorySelect = document.getElementById('subcategory_id');
 
-    if (categorySelect && subcategorySelect) {
-        var subcategoriesByCategory = JSON.parse(categorySelect.dataset.subcategories || '{}');
-        var initialSubcategoryId = subcategorySelect.dataset.initial || '';
-
-        var rebuildSubcategoryOptions = function () {
-            var subcategories = subcategoriesByCategory[categorySelect.value] || [];
-            var options = ['<option value="">None</option>'].concat(subcategories.map(function (subcategory) {
-                return '<option value="' + subcategory.id + '">' + subcategory.name + '</option>';
-            }));
-
-            subcategorySelect.innerHTML = options.join('');
-
-            if (initialSubcategoryId) {
-                subcategorySelect.value = initialSubcategoryId;
-                initialSubcategoryId = '';
-            }
-        };
-
-        categorySelect.addEventListener('change', rebuildSubcategoryOptions);
-        rebuildSubcategoryOptions();
-    }
-
-    var container = document.getElementById('allocations');
-    if (!container) {
+    if (!categorySelect || !subcategorySelect) {
         return;
     }
 
-    var splitToggle = document.getElementById('split-toggle');
-    var addButton = document.getElementById('add-allocation');
-    var resources = JSON.parse(container.dataset.resources || '[]');
-    var defaultSplit = JSON.parse(container.dataset.defaultSplit || '[]');
-    var termSingular = container.dataset.termSingular || 'Resource';
+    var subcategoriesByCategory = JSON.parse(categorySelect.dataset.subcategories || '{}');
+    var initialSubcategoryId = subcategorySelect.dataset.initial || '';
 
-    function rows() {
-        return Array.from(container.querySelectorAll('.allocation-row'));
-    }
+    var rebuildSubcategoryOptions = function () {
+        var subcategories = subcategoriesByCategory[categorySelect.value] || [];
+        var options = ['<option value="">None</option>'].concat(subcategories.map(function (subcategory) {
+            return '<option value="' + subcategory.id + '">' + subcategory.name + '</option>';
+        }));
 
-    function reindex() {
-        rows().forEach(function (row, index) {
-            row.querySelectorAll('[name]').forEach(function (field) {
-                field.name = field.name.replace(/allocations\[\d+\]/, 'allocations[' + index + ']');
-            });
-            var removeButton = row.querySelector('.remove-allocation');
-            removeButton.classList.toggle('hidden', rows().length <= 1);
-        });
-    }
+        subcategorySelect.innerHTML = options.join('');
 
-    function updateToggleUi() {
-        var isSplit = splitToggle.checked;
-        addButton.classList.toggle('hidden', !isSplit);
-        rows().forEach(function (row) {
-            row.querySelector('.remove-allocation').classList.toggle('hidden', !isSplit || rows().length <= 1);
-        });
-    }
-
-    function buildRow(index, resourceId, percentage) {
-        var options = resources.map(function (resource) {
-            var selected = resource.id === resourceId ? ' selected' : '';
-            return '<option value="' + resource.id + '"' + selected + '>' + resource.name + '</option>';
-        }).join('');
-
-        var row = document.createElement('div');
-        row.className = 'allocation-row grid grid-cols-[1fr_120px_auto] items-end gap-3';
-        row.innerHTML =
-            '<div><label class="block text-sm font-medium text-gray-700">' + termSingular + '</label>' +
-            '<select name="allocations[' + index + '][resource_id]" required class="form-control mt-1.5 pr-10">' + options + '</select></div>' +
-            '<div><label class="block text-sm font-medium text-gray-700">Percentage</label>' +
-            '<input type="number" name="allocations[' + index + '][percentage]" value="' + percentage + '" min="1" max="100" required class="form-control mt-1.5"></div>' +
-            '<button type="button" class="remove-allocation pb-2 text-sm text-red-600 hover:underline">Remove</button>';
-
-        return row;
-    }
-
-    // If a default split is configured and the form is still showing a
-    // single (un-split) row, checking the box pre-fills it from the default
-    // rather than leaving the user to add every row by hand.
-    function applyDefaultSplitIfFresh() {
-        if (rows().length > 1 || defaultSplit.length < 2) {
-            return;
+        if (initialSubcategoryId) {
+            subcategorySelect.value = initialSubcategoryId;
+            initialSubcategoryId = '';
         }
+    };
 
-        var resourceIds = resources.map(function (resource) {
-            return resource.id;
-        });
-        var applicable = defaultSplit.filter(function (allocation) {
-            return resourceIds.indexOf(allocation.resource_id) !== -1;
-        });
-
-        if (applicable.length < 2) {
-            return;
-        }
-
-        container.innerHTML = '';
-        applicable.forEach(function (allocation, index) {
-            container.appendChild(buildRow(index, allocation.resource_id, allocation.percentage));
-        });
-    }
-
-    splitToggle.addEventListener('change', function () {
-        if (splitToggle.checked) {
-            applyDefaultSplitIfFresh();
-        }
-        updateToggleUi();
-    });
-
-    addButton.addEventListener('click', function () {
-        var index = rows().length;
-        var usedIds = rows().map(function (row) {
-            return row.querySelector('select').value;
-        });
-        var nextResource = resources.find(function (resource) {
-            return usedIds.indexOf(resource.id) === -1;
-        }) || resources[0];
-
-        container.appendChild(buildRow(index, nextResource.id, ''));
-        updateToggleUi();
-    });
-
-    container.addEventListener('click', function (event) {
-        if (event.target.classList.contains('remove-allocation')) {
-            event.target.closest('.allocation-row').remove();
-            reindex();
-            updateToggleUi();
-        }
-    });
+    categorySelect.addEventListener('change', rebuildSubcategoryOptions);
+    rebuildSubcategoryOptions();
 })();

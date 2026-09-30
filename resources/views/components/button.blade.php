@@ -12,7 +12,7 @@
         default => 'bg-brand-700 text-white hover:bg-brand-900',
     };
 
-    $classes = "inline-flex h-10 cursor-pointer items-center justify-center whitespace-nowrap rounded-md px-4 text-sm font-medium shadow-sm transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700 $classes";
+    $classes = "inline-flex h-10 cursor-pointer items-center justify-center whitespace-nowrap rounded-xl px-4 text-sm font-semibold shadow-sm transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700 $classes";
 @endphp
 
 {{-- With an href it renders as a link styled like a button - a <button> nested inside an <a> is invalid HTML. --}}

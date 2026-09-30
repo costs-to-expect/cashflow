@@ -14,57 +14,52 @@
         @endphp
 
         <div data-period-switcher>
-            <section class="relative overflow-hidden rounded-3xl bg-linear-to-br from-brand-900 via-brand-700 to-fuchsia-700 p-5 text-white shadow-lg sm:p-8">
-                <div class="pointer-events-none absolute -right-16 -top-16 size-64 rounded-full bg-white/10 blur-3xl"></div>
-                <div class="pointer-events-none absolute -bottom-24 left-1/3 size-72 rounded-full bg-fuchsia-400/20 blur-3xl"></div>
+            <x-hero>
+                <div class="flex flex-wrap items-center justify-between gap-4">
+                    <p class="text-sm font-medium text-white/70">
+                        {{ count($resources) }} {{ count($resources) === 1 ? $resourceTermSingular : $resourceTermPlural }}@if ($showShares) · combined @endif
+                    </p>
 
-                <div class="relative">
-                    <div class="flex flex-wrap items-center justify-between gap-4">
-                        <p class="text-sm font-medium text-white/70">
-                            {{ count($resources) }} {{ count($resources) === 1 ? $resourceTermSingular : $resourceTermPlural }}@if ($showShares) · combined @endif
-                        </p>
-
-                        <x-dashboard.period-switcher :periods="$overallPeriodTotals" class="w-full sm:w-auto" />
-                    </div>
-
-                    <div class="mt-6">
-                        @foreach ($overallPeriodTotals as $entry)
-                            @php($periodIndex = $loop->index)
-
-                            <div data-period="{{ $entry['key'] }}" @class(['hidden' => ! $loop->first])>
-                                <x-dashboard.amount :totals="$entry['totals']" number="text-5xl font-bold tracking-tight sm:text-6xl" currency="text-2xl font-semibold text-white/70 sm:text-3xl" extra="mt-1 text-lg font-medium text-white/80" />
-
-                                <p class="mt-2 text-sm text-white/70"><x-dashboard.period-caption :entry="$entry" /></p>
-
-                                @if ($showShares && collect($resources)->sum(fn ($resource) => $periodTotalsByResource[$resource['id']][$periodIndex]['share'] ?? 0) > 0)
-                                    <div class="mt-6 flex h-2.5 overflow-hidden rounded-full bg-white/20">
-                                        @foreach ($resources as $resource)
-                                            <span style="width: {{ $periodTotalsByResource[$resource['id']][$periodIndex]['share'] ?? 0 }}%; background: {{ $colours[$resource['id']]['hex'] }}"></span>
-                                        @endforeach
-                                    </div>
-
-                                    <div class="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-sm text-white/80">
-                                        @foreach ($resources as $resource)
-                                            <span class="inline-flex items-center gap-2">
-                                                <span class="size-2.5 rounded-full" style="background: {{ $colours[$resource['id']]['hex'] }}"></span>
-                                                {{ $resource['name'] }}
-                                                <strong class="font-semibold text-white">{{ $periodTotalsByResource[$resource['id']][$periodIndex]['share'] ?? 0 }}%</strong>
-                                            </span>
-                                        @endforeach
-                                    </div>
-                                @endif
-                            </div>
-                        @endforeach
-                    </div>
-
-                    <div class="mt-7 flex flex-wrap gap-2">
-                        <x-button variant="hero" :href="route('expenses.create', $currentResourceType)">Add expense</x-button>
-                        <x-button variant="ghost" :href="route('expenses.create', ['resourceType' => $currentResourceType, 'split' => 1])">Add split expense</x-button>
-                        <x-button variant="ghost" :href="route('recurring.index', $currentResourceType)">Recurring</x-button>
-                        <x-button variant="ghost" :href="route('resources.create', $currentResourceType)">Add {{ strtolower($resourceTermSingular) }}</x-button>
-                    </div>
+                    <x-dashboard.period-switcher :periods="$overallPeriodTotals" class="w-full sm:w-auto" />
                 </div>
-            </section>
+
+                <div class="mt-6">
+                    @foreach ($overallPeriodTotals as $entry)
+                        @php($periodIndex = $loop->index)
+
+                        <div data-period="{{ $entry['key'] }}" @class(['hidden' => ! $loop->first])>
+                            <x-dashboard.amount :totals="$entry['totals']" number="text-5xl font-bold tracking-tight sm:text-6xl" currency="text-2xl font-semibold text-white/70 sm:text-3xl" extra="mt-1 text-lg font-medium text-white/80" />
+
+                            <p class="mt-2 text-sm text-white/70"><x-dashboard.period-caption :entry="$entry" /></p>
+
+                            @if ($showShares && collect($resources)->sum(fn ($resource) => $periodTotalsByResource[$resource['id']][$periodIndex]['share'] ?? 0) > 0)
+                                <div class="mt-6 flex h-2.5 overflow-hidden rounded-full bg-white/20">
+                                    @foreach ($resources as $resource)
+                                        <span style="width: {{ $periodTotalsByResource[$resource['id']][$periodIndex]['share'] ?? 0 }}%; background: {{ $colours[$resource['id']]['hex'] }}"></span>
+                                    @endforeach
+                                </div>
+
+                                <div class="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-sm text-white/80">
+                                    @foreach ($resources as $resource)
+                                        <span class="inline-flex items-center gap-2">
+                                            <span class="size-2.5 rounded-full" style="background: {{ $colours[$resource['id']]['hex'] }}"></span>
+                                            {{ $resource['name'] }}
+                                            <strong class="font-semibold text-white">{{ $periodTotalsByResource[$resource['id']][$periodIndex]['share'] ?? 0 }}%</strong>
+                                        </span>
+                                    @endforeach
+                                </div>
+                            @endif
+                        </div>
+                    @endforeach
+                </div>
+
+                <div class="mt-7 flex flex-wrap gap-2">
+                    <x-button variant="hero" :href="route('expenses.create', $currentResourceType)">Add expense</x-button>
+                    <x-button variant="ghost" :href="route('expenses.create', ['resourceType' => $currentResourceType, 'split' => 1])">Add split expense</x-button>
+                    <x-button variant="ghost" :href="route('recurring.index', $currentResourceType)">Recurring</x-button>
+                    <x-button variant="ghost" :href="route('resources.create', $currentResourceType)">Add {{ strtolower($resourceTermSingular) }}</x-button>
+                </div>
+            </x-hero>
 
             <div class="mt-6 grid gap-6 md:grid-cols-2">
                 @foreach ($resources as $resource)

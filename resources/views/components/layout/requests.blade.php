@@ -5,7 +5,7 @@
 @endphp
 
 @if (count($requests) > 0)
-    <div class="mt-12 rounded-lg border border-gray-200 bg-white p-4 text-sm">
+    <div class="mt-12 rounded-2xl bg-white p-4 text-sm shadow-sm ring-1 ring-gray-200">
         <div class="mb-3 grid grid-cols-3 gap-4 text-center">
             <div>
                 <p class="text-lg font-semibold text-gray-900">{{ count($requests) }}</p>

@@ -1,67 +1,40 @@
 <x-layouts.app title="Add monthly recurring expense">
-    <h1 class="mb-2 text-lg font-semibold text-gray-900">Add monthly recurring expense</h1>
-    <p class="mb-6 text-sm text-gray-600">This expense is created automatically every month, between the start and (optional) end date below.</p>
-
     @if (count($resources) === 0)
-        <p class="text-sm text-gray-600">You need to <a href="{{ route('resources.create', $currentResourceType) }}" class="text-indigo-600 hover:underline">add a {{ strtolower($resourceTermSingular) }}</a> first.</p>
+        <p class="text-sm text-gray-600">You need to <a href="{{ route('resources.create', $currentResourceType) }}" class="text-brand-700 hover:underline">add a {{ strtolower($resourceTermSingular) }}</a> first.</p>
     @else
-        <form method="POST" action="{{ route('recurring.store', $currentResourceType) }}" class="max-w-xl space-y-4 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-            @csrf
+        <div class="mx-auto max-w-2xl">
+            <form method="POST" action="{{ route('recurring.store', $currentResourceType) }}" class="space-y-6">
+                @csrf
 
-            <x-helper.form.field.text name="name" title="Name" required :value="old('name')" />
-            <x-helper.form.field.textarea name="description" title="Description" :value="old('description')" />
+                <x-hero :back="route('recurring.index', $currentResourceType)" back-label="Recurring expenses" eyebrow="Add monthly recurring expense"
+                    description="This expense is created automatically every month, between the start and (optional) end date below.">
+                    <div class="mt-5"><x-expense.amount-field :currencies="$currencies" :currency-id="$defaultCurrencyId" /></div>
+                </x-hero>
 
-            <div class="grid grid-cols-2 gap-4">
-                <x-helper.form.field.number name="day_of_month" title="Day of month" required min="1" max="31" :value="old('day_of_month', 1)" />
-                <x-helper.form.field.select name="currency_id" title="Currency" required :value="old('currency_id', $defaultCurrencyId)"
-                    :options="collect($currencies)->mapWithKeys(fn ($currency) => [$currency['id'] => $currency['code']])" />
-            </div>
+                <section class="space-y-5 rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-200 sm:p-6">
+                    <h2 class="text-base font-semibold text-gray-900">Schedule</h2>
 
-            <div class="grid grid-cols-2 gap-4">
-                <x-helper.form.field.date name="starts_on" title="Starts on" required :value="old('starts_on', now()->toDateString())" />
-                <x-helper.form.field.date name="ends_on" title="Ends on" :value="old('ends_on')" />
-            </div>
+                    <div class="grid gap-4 sm:grid-cols-3">
+                        <x-helper.form.field.number name="day_of_month" title="Day of month" required min="1" max="31" :value="1" />
+                        <x-helper.form.field.date name="starts_on" title="Starts on" required :value="now()->toDateString()" />
+                        <x-helper.form.field.date name="ends_on" title="Ends on" hint="Optional. Leave blank to keep going." />
+                    </div>
+                </section>
 
-            <x-helper.form.field.number name="total" title="Total amount" required min="0" step="0.01" :value="old('total')" data-format="number" data-points="2" />
+                <x-expense.details :categories="$categories" :subcategories-by-category="$subcategoriesByCategory" />
 
-            <div class="grid grid-cols-2 gap-4">
-                <x-helper.form.field.select name="category_id" title="Category" :value="old('category_id')"
-                    :options="collect(['' => 'None'])->merge(collect($categories)->mapWithKeys(fn ($category) => [$category['id'] => $category['name']]))"
-                    data-subcategories="{{ json_encode($subcategoriesByCategory) }}" />
-                <x-helper.form.field.select name="subcategory_id" title="Subcategory" :value="old('subcategory_id')"
-                    :options="['' => 'None']" />
-            </div>
+                <x-expense.split :resources="$resources" :term="$resourceTermSingular" :default-split="$defaultSplit"
+                    :allocations="old('allocations', [['resource_id' => $resources[0]['id'], 'percentage' => 100]])" />
 
-            <div>
-                <label class="flex items-center gap-2 text-sm text-gray-700">
-                    <input type="checkbox" id="split-toggle" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
-                    Split this expense across more than one {{ strtolower($resourceTermSingular) }}
-                </label>
-            </div>
-
-            <div id="allocations" class="space-y-3"
-                 data-resources='@json(collect($resources)->map(fn ($resource) => ['id' => $resource['id'], 'name' => $resource['name']]))'
-                 data-default-split='@json($defaultSplit)'
-                 data-term-singular="{{ $resourceTermSingular }}">
-                <div class="allocation-row grid grid-cols-[1fr_120px_auto] items-end gap-3">
-                    <x-helper.form.field.select name="allocations[0][resource_id]" :title="$resourceTermSingular" required
-                        :value="old('allocations.0.resource_id', $resources[0]['id'])"
-                        :options="collect($resources)->mapWithKeys(fn ($resource) => [$resource['id'] => $resource['name']])"
-                        errorKey="allocations.0.resource_id" />
-                    <x-helper.form.field.number name="allocations[0][percentage]" title="Percentage" required min="1" max="100"
-                        :value="old('allocations.0.percentage', 100)" errorKey="allocations.0.percentage" />
-                    <button type="button" class="remove-allocation hidden pb-2 text-sm text-red-600 hover:underline">Remove</button>
+                <div class="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+                    <x-button variant="secondary" :href="route('recurring.index', $currentResourceType)">Cancel</x-button>
+                    <x-button>Add recurring expense</x-button>
                 </div>
-            </div>
-
-            <button type="button" id="add-allocation" class="hidden text-sm text-indigo-600 hover:underline">+ Add another {{ strtolower($resourceTermSingular) }}</button>
-
-            <div>
-                <x-button>Add recurring expense</x-button>
-            </div>
-        </form>
+            </form>
+        </div>
 
         <script src="{{ asset('js/'.$version['js'].'/format-number.js') }}" defer></script>
         <script src="{{ asset('js/'.$version['js'].'/expense-form.js') }}" defer></script>
+        <script src="{{ asset('js/'.$version['js'].'/expense-split.js') }}" defer></script>
     @endif
 </x-layouts.app>

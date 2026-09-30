@@ -1,4 +1,4 @@
-@props(['index', 'resources', 'colours', 'resourceId', 'percentage' => null, 'split' => false, 'term' => 'Resource'])
+@props(['index', 'resources', 'colours', 'resourceId', 'percentage' => null, 'split' => false, 'share' => true, 'term' => 'Resource'])
 
 {{--
     One row of the add-expense split: which resource, what percentage, and (filled in by
@@ -22,14 +22,16 @@
         </select>
     </div>
 
-    <label data-split-only class="{{ $split ? '' : 'hidden' }} relative w-24">
+    <label data-split-only class="{{ $split ? '' : 'hidden' }} {{ $share ? '' : 'ml-auto' }} relative w-24">
         <span class="sr-only">Percentage</span>
         <input type="number" name="allocations[{{ $index }}][percentage]" value="{{ $percentage }}" min="1" max="100" required
                class="form-control py-2 pr-7 text-right {{ $errors->has($percentageKey) ? 'form-control-error' : '' }}">
         <span class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-500" aria-hidden="true">%</span>
     </label>
 
-    <span data-share class="ml-auto min-w-24 text-right text-sm font-semibold tabular-nums text-gray-900"></span>
+    @if ($share)
+        <span data-share class="ml-auto min-w-24 text-right text-sm font-semibold tabular-nums text-gray-900"></span>
+    @endif
 
     <button type="button" data-remove data-split-only aria-label="Remove" class="{{ $split ? '' : 'hidden' }} grid size-8 cursor-pointer place-items-center rounded-lg text-gray-400 hover:bg-red-50 hover:text-red-600">
         <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" /></svg>

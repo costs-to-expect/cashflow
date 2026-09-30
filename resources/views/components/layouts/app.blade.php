@@ -47,10 +47,10 @@
                 @endif
 
                 @if ($currentResourceType)
-                    <a href="{{ route('resource-types.create') }}" class="hidden h-10 items-center justify-center rounded-md border border-white/30 px-4 text-base font-medium text-white hover:bg-brand-600 sm:inline-flex" title="New resource type">+ New</a>
+                    <a href="{{ route('resource-types.create') }}" class="hidden h-10 items-center justify-center rounded-xl border border-white/30 px-4 text-base font-medium text-white hover:bg-brand-600 sm:inline-flex" title="New resource type">+ New</a>
                 @endif
 
-                <a href="{{ route('auth.sign-out.action') }}" class="hidden h-10 items-center justify-center rounded-md border border-white/30 px-4 text-base font-medium text-white hover:bg-brand-600 sm:inline-flex">Sign out</a>
+                <a href="{{ route('auth.sign-out.action') }}" class="hidden h-10 items-center justify-center rounded-xl border border-white/30 px-4 text-base font-medium text-white hover:bg-brand-600 sm:inline-flex">Sign out</a>
 
                 <button type="button" id="mobile-menu-toggle" aria-controls="mobile-menu" aria-expanded="false" class="inline-flex items-center rounded-md p-2 text-white/70 hover:bg-brand-600 hover:text-white sm:hidden">
                     <svg id="mobile-menu-toggle-open" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" /></svg>
