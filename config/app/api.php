@@ -8,17 +8,14 @@ return [
     |--------------------------------------------------------------------------
     |
     | Connection details for the Costs to Expect API instance this app talks
-    | to, and the fixed resource type ("kids") every screen operates under.
+    | to. Resource types themselves (which API resource type each one maps
+    | to, allocated-expense vs allocated-transaction) are stored locally in
+    | the resource_types table, not configured here - see
+    | App\Models\ResourceType.
     |
     */
 
     'base_url' => env('API_URL', 'http://localhost:8080'),
-
-    'resource_type_id' => env('API_RESOURCE_TYPE_ID'),
-
-    'item_type_id' => env('API_ITEM_TYPE_ID', 'OqZwKX16bW'),
-
-    'item_subtype_id' => env('API_ITEM_SUBTYPE_ID', 'a56kbWV82n'),
 
     'default_currency_id' => env('API_DEFAULT_CURRENCY_ID'),
 
@@ -27,9 +24,10 @@ return [
     | Resource terminology
     |--------------------------------------------------------------------------
     |
-    | What a "resource" under the fixed resource type is called in the UI.
-    | Defaults to "Child"/"Children" for this family, but another instance of
-    | this app could be tracking anything (products, projects, ...).
+    | What a "resource" is called in the UI before a resource type has its
+    | own naming set from Settings. Defaults to "Child"/"Children" for this
+    | family, but another resource type could be tracking anything (products,
+    | projects, ...) and name its resources accordingly.
     |
     */
 

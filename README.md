@@ -1,20 +1,26 @@
 # Costs to Expect: Cashflow
 
-A lightweight Laravel app for recording allocated expenses against the
-[Costs to Expect API](https://github.com/costs-to-expect/api)'s
-`allocated-expense` item type.
+A lightweight Laravel app for tracking cashflow against the
+[Costs to Expect API](https://github.com/costs-to-expect/api) — either
+allocated expenses (the `allocated-expense` item type) or general
+transactions (the `allocated-transaction` item type).
 
-The app tracks expenses for one or more **resources** under a single, fixed
-API resource type — a resource can be anything you're tracking allocated
-costs for (children, a project, a side hustle, a small business, whatever
-fits). What resources are called in the UI ("Child"/"Children" by default) is
-configurable per deployment, from Settings.
+The app supports multiple independent **resource types** (e.g. "Kids",
+"Household"), each backed by whichever of the API item types above you
+choose when you create it, switchable from the nav. Each resource type tracks
+one or more **resources** — a resource can be anything you're tracking
+allocated costs for (children, a project, a side hustle, a small business,
+whatever fits). What resources are called in the UI ("Child"/"Children" by
+default) is configurable per resource type, from Settings.
 
 Currently in alpha, built for a single family's private use, with a
 hard-coded two-user allow-list and no public registration.
 
 ## Features
 
+- **Multiple resource types** — create as many as you need, each choosing
+  expense tracking or transaction tracking independently, with its own
+  resources, categories, default split, reporting periods, and naming.
 - **Percentage-based splitting** — record an expense once and share it across
   as many resources as needed by percentage, rather than duplicating it per
   resource.
@@ -26,7 +32,8 @@ hard-coded two-user allow-list and no public registration.
   "6 April → 5 April") and see running totals for the current instance of
   each one, per resource and combined across all resources.
 - **Default split, categories, and resource naming** — configurable from
-  Settings, all stored locally and layered on top of the API's own data.
+  Settings, per resource type, all stored locally and layered on top of the
+  API's own data.
 
 ## Tech stack
 
@@ -43,7 +50,6 @@ hard-coded two-user allow-list and no public registration.
 
 - Docker (app + MySQL run as containers alongside a running Costs to Expect
   API instance)
-- A public, `allocated-expense` resource type already created on that API
 
 ## Local development
 
@@ -66,11 +72,14 @@ composer setup
 | Variable | Purpose |
 |---|---|
 | `API_URL` | Base URL of the Costs to Expect API instance |
-| `API_RESOURCE_TYPE_ID` | The fixed resource type this app operates under |
-| `API_ITEM_TYPE_ID` / `API_ITEM_SUBTYPE_ID` | The `allocated-expense` item (sub)type ids |
+| `API_DEFAULT_CURRENCY_ID` | Default currency pre-selected on the expense form |
 | `API_SERVICE_TOKEN` | Long-lived token used by the recurring-expense scheduler, which runs outside any signed-in user's session |
 | `APP_ALLOWED_EMAILS` | Comma-separated list of emails allowed to sign in |
-| `APP_RESOURCE_TERM` / `APP_RESOURCE_TERM_PLURAL` | Default singular/plural naming for a resource in the UI (overridable per-deployment from Settings) |
+| `APP_RESOURCE_TERM` / `APP_RESOURCE_TERM_PLURAL` | Default singular/plural naming for a resource in the UI, before a resource type has its own naming set from Settings |
+
+Resource types themselves aren't configured via `.env` — create and switch
+between them from the nav once signed in (each one records which API
+resource type / item type it maps to in its own `resource_types` row).
 
 See `.env.example` for the full list.
 
