@@ -6,6 +6,9 @@
     $classes = match ($variant) {
         'secondary' => 'border border-gray-300 bg-white text-gray-700 hover:border-brand-700 hover:bg-gray-50 hover:text-brand-700',
         'danger' => 'bg-red-600 text-white hover:bg-red-700',
+        // For use on the dark brand-gradient hero panels.
+        'hero' => 'bg-white text-brand-800 hover:bg-brand-tint',
+        'ghost' => 'bg-white/10 text-white ring-1 ring-white/30 hover:bg-white/20',
         default => 'bg-brand-700 text-white hover:bg-brand-900',
     };
 

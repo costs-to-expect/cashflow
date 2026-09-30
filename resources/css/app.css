@@ -16,6 +16,9 @@
     --color-brand-700: #6B0B68;
     --color-brand-800: #5C0759;
     --color-brand-900: #4D044B;
+
+    /* A soft tint of the brand purple, for light backgrounds and hovers. */
+    --color-brand-tint: #FBF2FA;
 }
 
 /*

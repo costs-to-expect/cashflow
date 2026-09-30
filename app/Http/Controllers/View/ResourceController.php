@@ -7,12 +7,16 @@ namespace App\Http\Controllers\View;
 use App\Http\Controllers\Controller;
 use App\Models\ResourceType;
 use App\Service\Api\ApiService;
+use App\Service\Reporting\PeriodTotals;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class ResourceController extends Controller
 {
-    public function __construct(private readonly ApiService $api) {}
+    public function __construct(
+        private readonly ApiService $api,
+        private readonly PeriodTotals $periodTotals,
+    ) {}
 
     /**
      * $resourceType isn't used directly here, but a route-bound model
@@ -46,7 +50,8 @@ class ResourceController extends Controller
 
         return view('resources.show', [
             'resource' => $resource['content'],
-            'items' => $items['status'] === 200 ? $items['content'] : [],
+            'periodTotals' => $this->periodTotals->forResource($resourceType, $resource_id),
+            'items' =>$items['status'] === 200 ? $items['content'] : [],
             'page' => $page,
             'hasMore' => $items['status'] === 200 && count($items['content']) === $perPage,
         ]);

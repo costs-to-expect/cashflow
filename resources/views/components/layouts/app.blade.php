@@ -12,7 +12,7 @@
     <x-layout.api-status />
 
     <nav class="bg-brand-700">
-        <div class="mx-auto flex max-w-4xl items-center justify-between px-4 py-4">
+        <div class="mx-auto flex max-w-5xl items-center justify-between px-4 py-4">
             <div class="flex items-center gap-6">
                 <a href="{{ $currentResourceType ? route('dashboard', $currentResourceType) : route('resource-types.index') }}" class="text-lg font-semibold text-white">{{ config('app.name') }}</a>
 
@@ -81,7 +81,7 @@
         </div>
     </nav>
 
-    <main class="mx-auto max-w-4xl px-4 py-8">
+    <main class="mx-auto max-w-5xl px-4 py-8">
         <x-flash />
         <x-form-errors />
 
