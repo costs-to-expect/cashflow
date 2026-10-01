@@ -1,5 +1,7 @@
+@props(['width' => 'max-w-4xl'])
+
 <nav class="bg-brand-700">
-    <div class="mx-auto flex max-w-4xl items-center justify-between px-4 py-4">
+    <div class="mx-auto flex {{ $width }} items-center justify-between px-4 py-4">
         <a href="{{ route('welcome') }}" class="text-lg font-semibold text-white">{{ config('app.name') }}</a>
 
         <div class="flex items-center gap-3">

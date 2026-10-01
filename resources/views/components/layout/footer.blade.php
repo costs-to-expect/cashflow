@@ -1,5 +1,7 @@
+@props(['width' => 'max-w-4xl'])
+
 <footer class="border-t border-gray-200 bg-white">
-    <div class="mx-auto max-w-4xl px-4 py-10">
+    <div class="mx-auto {{ $width }} px-4 py-10">
         <div class="grid grid-cols-2 gap-8 sm:grid-cols-3">
             <div>
                 <h2 class="text-sm font-semibold text-gray-900">Costs to Expect</h2>
