@@ -1,42 +1,25 @@
 <x-layouts.app title="Default split">
-    <h1 class="mb-2 text-lg font-semibold text-gray-900">Default split</h1>
-    <p class="mb-6 text-sm text-gray-600">
-        The percentages pre-filled whenever you split an expense across more than one {{ strtolower($resourceTermSingular) }}.
-    </p>
+    <div class="mx-auto max-w-2xl">
+        <x-hero :compact="true" :back="route('settings.index', $currentResourceType)" back-label="Settings" eyebrow="Settings" title="Default split"
+            :description="'The percentages pre-filled whenever you split an expense across more than one '.strtolower($resourceTermSingular).'.'" />
 
-    @if (count($resources) === 0)
-        <p class="text-sm text-gray-600">You need to <a href="{{ route('resources.create') }}" class="text-indigo-600 hover:underline">add a {{ strtolower($resourceTermSingular) }}</a> first.</p>
-    @else
-        <form method="POST" action="{{ route('settings.default-split.action') }}" class="max-w-xl space-y-4 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-            @csrf
+        @if (count($resources) === 0)
+            <p class="mt-6 text-sm text-gray-600">You need to <a href="{{ route('resources.create', $currentResourceType) }}" class="text-brand-700 hover:underline">add a {{ strtolower($resourceTermSingular) }}</a> first.</p>
+        @else
+            <form method="POST" action="{{ route('settings.default-split.action', $currentResourceType) }}" class="mt-6 space-y-6">
+                @csrf
 
-            @php
-                $oldAllocations = old('allocations', count($allocations) > 0 ? $allocations : [['resource_id' => $resources[0]['id'], 'percentage' => 100]]);
-            @endphp
+                <x-expense.split :always="true" :amounts="false" :resources="$resources" :term="$resourceTermSingular"
+                    heading="Percentages" :description="'Each '.strtolower($resourceTermSingular).' you include gets a share; together they should add up to 100%.'"
+                    :allocations="old('allocations', count($allocations) > 0 ? $allocations : [['resource_id' => $resources[0]['id'], 'percentage' => 100]])" />
 
-            <div id="default-split-allocations" class="space-y-3"
-                 data-resources='@json(collect($resources)->map(fn ($resource) => ['id' => $resource['id'], 'name' => $resource['name']]))'
-                 data-term-singular="{{ $resourceTermSingular }}">
-                @foreach ($oldAllocations as $index => $allocation)
-                    <div class="allocation-row grid grid-cols-[1fr_120px_auto] items-end gap-3">
-                        <x-helper.form.field.select :name="'allocations['.$index.'][resource_id]'" :title="$resourceTermSingular" required
-                            :value="$allocation['resource_id']"
-                            :options="collect($resources)->mapWithKeys(fn ($resource) => [$resource['id'] => $resource['name']])"
-                            :errorKey="'allocations.'.$index.'.resource_id'" />
-                        <x-helper.form.field.number :name="'allocations['.$index.'][percentage]'" title="Percentage" required min="1" max="100"
-                            :value="$allocation['percentage']" :errorKey="'allocations.'.$index.'.percentage'" />
-                        <button type="button" class="remove-allocation {{ count($oldAllocations) > 1 ? '' : 'hidden' }} pb-2 text-sm text-red-600 hover:underline">Remove</button>
-                    </div>
-                @endforeach
-            </div>
+                <div class="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+                    <x-button variant="secondary" :href="route('settings.index', $currentResourceType)">Cancel</x-button>
+                    <x-button>Save default split</x-button>
+                </div>
+            </form>
 
-            <button type="button" id="add-default-split-allocation" class="text-sm text-indigo-600 hover:underline">+ Add another {{ strtolower($resourceTermSingular) }}</button>
-
-            <div>
-                <x-button>Save default split</x-button>
-            </div>
-        </form>
-
-        <script src="{{ asset('js/'.$version['js'].'/default-split-form.js') }}" defer></script>
-    @endif
+            <script src="{{ asset('js/'.$version['js'].'/expense-split.js') }}" defer></script>
+        @endif
+    </div>
 </x-layouts.app>

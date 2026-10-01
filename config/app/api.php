@@ -8,28 +8,45 @@ return [
     |--------------------------------------------------------------------------
     |
     | Connection details for the Costs to Expect API instance this app talks
-    | to, and the fixed resource type ("kids") every screen operates under.
+    | to. Resource types themselves (which API resource type each one maps
+    | to, allocated-expense vs allocated-transaction) are stored locally in
+    | the resource_types table, not configured here - see
+    | App\Models\ResourceType.
     |
     */
 
     'base_url' => env('API_URL', 'http://localhost:8080'),
 
-    'resource_type_id' => env('API_RESOURCE_TYPE_ID'),
-
-    'item_type_id' => env('API_ITEM_TYPE_ID', 'OqZwKX16bW'),
-
-    'item_subtype_id' => env('API_ITEM_SUBTYPE_ID', 'a56kbWV82n'),
-
     'default_currency_id' => env('API_DEFAULT_CURRENCY_ID'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Pooled request concurrency
+    |--------------------------------------------------------------------------
+    |
+    | The most GET/HEAD requests a pool (see App\Service\Api\Http::pool())
+    | will have in flight at once; the rest queue behind them. 8 is sized so
+    | the biggest pool a page makes for a single resource type with one
+    | resource and two reporting periods (the resource page's seven) goes
+    | out in one wave - more resources, periods or categories than that
+    | mean extra waves, and raising this removes them. Pooling makes a page
+    | faster, it doesn't send fewer requests, so keep it in mind against the
+    | API's rate limit (60 a minute by default, higher for some accounts).
+    | 0 means no cap.
+    |
+    */
+
+    'pool_concurrency' => (int) env('API_POOL_CONCURRENCY', 8),
 
     /*
     |--------------------------------------------------------------------------
     | Resource terminology
     |--------------------------------------------------------------------------
     |
-    | What a "resource" under the fixed resource type is called in the UI.
-    | Defaults to "Child"/"Children" for this family, but another instance of
-    | this app could be tracking anything (products, projects, ...).
+    | What a "resource" is called in the UI before a resource type has its
+    | own naming set from Settings. Defaults to "Child"/"Children" for this
+    | family, but another resource type could be tracking anything (products,
+    | projects, ...) and name its resources accordingly.
     |
     */
 

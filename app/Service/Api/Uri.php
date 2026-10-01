@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace App\Service\Api;
 
-use Illuminate\Support\Facades\Config;
-
 /**
  * Builds the URI paths for the Costs to Expect API endpoints this app uses.
- * Every method returns a path relative to the API base url, the fixed
- * "kids" resource type id is baked in rather than passed around everywhere.
+ * Every path scoped to a resource type takes its id explicitly - the app
+ * can have several resource types active at once, so nothing here reads a
+ * "the" resource type from global config any more.
  */
 class Uri
 {
@@ -30,19 +29,39 @@ class Uri
         return '/'.self::VERSION.'/currencies?collection=true';
     }
 
-    public static function resources(): string
+    public static function resourceTypes(): string
     {
-        return '/'.self::VERSION.'/resource-types/'.self::resourceTypeId().'/resources?collection=true';
+        return '/'.self::VERSION.'/resource-types';
     }
 
-    public static function resource(string $resourceId): string
+    public static function permittedResourceTypes(): string
     {
-        return '/'.self::VERSION.'/resource-types/'.self::resourceTypeId().'/resources/'.$resourceId;
+        return '/'.self::VERSION.'/auth/user/permitted-resource-types';
     }
 
-    public static function items(string $resourceId, array $query = []): string
+    public static function itemTypes(): string
     {
-        $uri = '/'.self::VERSION.'/resource-types/'.self::resourceTypeId().'/resources/'.$resourceId.'/items';
+        return '/'.self::VERSION.'/item-types';
+    }
+
+    public static function itemSubtypes(string $itemTypeId): string
+    {
+        return '/'.self::VERSION.'/item-types/'.$itemTypeId.'/item-subtypes';
+    }
+
+    public static function resources(string $resourceTypeId): string
+    {
+        return '/'.self::VERSION.'/resource-types/'.$resourceTypeId.'/resources?collection=true';
+    }
+
+    public static function resource(string $resourceTypeId, string $resourceId): string
+    {
+        return '/'.self::VERSION.'/resource-types/'.$resourceTypeId.'/resources/'.$resourceId;
+    }
+
+    public static function items(string $resourceTypeId, string $resourceId, array $query = []): string
+    {
+        $uri = '/'.self::VERSION.'/resource-types/'.$resourceTypeId.'/resources/'.$resourceId.'/items';
 
         if ($query !== []) {
             $uri .= '?'.http_build_query($query);
@@ -51,9 +70,9 @@ class Uri
         return $uri;
     }
 
-    public static function item(string $resourceId, string $itemId): string
+    public static function item(string $resourceTypeId, string $resourceId, string $itemId): string
     {
-        return '/'.self::VERSION.'/resource-types/'.self::resourceTypeId().'/resources/'.$resourceId.'/items/'.$itemId;
+        return '/'.self::VERSION.'/resource-types/'.$resourceTypeId.'/resources/'.$resourceId.'/items/'.$itemId;
     }
 
     /**
@@ -67,9 +86,9 @@ class Uri
      * new resource - suspected to be a scheduler/cache-population job not
      * running locally. Works correctly on established data.
      */
-    public static function itemsSummary(string $resourceId, array $query = []): string
+    public static function itemsSummary(string $resourceTypeId, string $resourceId, array $query = []): string
     {
-        $uri = '/'.self::VERSION.'/summary/resource-types/'.self::resourceTypeId().'/resources/'.$resourceId.'/items';
+        $uri = '/'.self::VERSION.'/summary/resource-types/'.$resourceTypeId.'/resources/'.$resourceId.'/items';
 
         if ($query !== []) {
             $uri .= '?'.http_build_query($query);
@@ -83,9 +102,9 @@ class Uri
      * the resource type at once (e.g. every resource's expenses combined) -
      * for a resource-type-wide total rather than one resource's.
      */
-    public static function resourceTypeItemsSummary(array $query = []): string
+    public static function resourceTypeItemsSummary(string $resourceTypeId, array $query = []): string
     {
-        $uri = '/'.self::VERSION.'/summary/resource-types/'.self::resourceTypeId().'/items';
+        $uri = '/'.self::VERSION.'/summary/resource-types/'.$resourceTypeId.'/items';
 
         if ($query !== []) {
             $uri .= '?'.http_build_query($query);
@@ -94,58 +113,53 @@ class Uri
         return $uri;
     }
 
-    public static function categories(): string
+    public static function categories(string $resourceTypeId): string
     {
-        return self::categoriesBase().'?collection=true';
+        return self::categoriesBase($resourceTypeId).'?collection=true';
     }
 
-    public static function category(string $categoryId): string
+    public static function category(string $resourceTypeId, string $categoryId): string
     {
-        return self::categoriesBase().'/'.$categoryId;
+        return self::categoriesBase($resourceTypeId).'/'.$categoryId;
     }
 
-    public static function subcategories(string $categoryId): string
+    public static function subcategories(string $resourceTypeId, string $categoryId): string
     {
-        return self::subcategoriesBase($categoryId).'?collection=true';
+        return self::subcategoriesBase($resourceTypeId, $categoryId).'?collection=true';
     }
 
-    public static function subcategory(string $categoryId, string $subcategoryId): string
+    public static function subcategory(string $resourceTypeId, string $categoryId, string $subcategoryId): string
     {
-        return self::subcategoriesBase($categoryId).'/'.$subcategoryId;
+        return self::subcategoriesBase($resourceTypeId, $categoryId).'/'.$subcategoryId;
     }
 
-    private static function categoriesBase(): string
+    private static function categoriesBase(string $resourceTypeId): string
     {
-        return '/'.self::VERSION.'/resource-types/'.self::resourceTypeId().'/categories';
+        return '/'.self::VERSION.'/resource-types/'.$resourceTypeId.'/categories';
     }
 
-    private static function subcategoriesBase(string $categoryId): string
+    private static function subcategoriesBase(string $resourceTypeId, string $categoryId): string
     {
-        return self::category($categoryId).'/subcategories';
+        return self::category($resourceTypeId, $categoryId).'/subcategories';
     }
 
-    public static function itemCategories(string $resourceId, string $itemId): string
+    public static function itemCategories(string $resourceTypeId, string $resourceId, string $itemId): string
     {
-        return '/'.self::VERSION.'/resource-types/'.self::resourceTypeId().'/resources/'.$resourceId.'/items/'.$itemId.'/categories';
+        return '/'.self::VERSION.'/resource-types/'.$resourceTypeId.'/resources/'.$resourceId.'/items/'.$itemId.'/categories';
     }
 
-    public static function itemCategory(string $resourceId, string $itemId, string $itemCategoryId): string
+    public static function itemCategory(string $resourceTypeId, string $resourceId, string $itemId, string $itemCategoryId): string
     {
-        return self::itemCategories($resourceId, $itemId).'/'.$itemCategoryId;
+        return self::itemCategories($resourceTypeId, $resourceId, $itemId).'/'.$itemCategoryId;
     }
 
-    public static function itemSubcategories(string $resourceId, string $itemId, string $itemCategoryId): string
+    public static function itemSubcategories(string $resourceTypeId, string $resourceId, string $itemId, string $itemCategoryId): string
     {
-        return self::itemCategory($resourceId, $itemId, $itemCategoryId).'/subcategories';
+        return self::itemCategory($resourceTypeId, $resourceId, $itemId, $itemCategoryId).'/subcategories';
     }
 
-    public static function itemSubcategory(string $resourceId, string $itemId, string $itemCategoryId, string $itemSubcategoryId): string
+    public static function itemSubcategory(string $resourceTypeId, string $resourceId, string $itemId, string $itemCategoryId, string $itemSubcategoryId): string
     {
-        return self::itemSubcategories($resourceId, $itemId, $itemCategoryId).'/'.$itemSubcategoryId;
-    }
-
-    private static function resourceTypeId(): string
-    {
-        return (string) Config::get('app.api.resource_type_id');
+        return self::itemSubcategories($resourceTypeId, $resourceId, $itemId, $itemCategoryId).'/'.$itemSubcategoryId;
     }
 }

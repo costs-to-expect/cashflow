@@ -8,18 +8,19 @@
     <link rel="icon" type="image/png" sizes="192x192" href="{{ asset('images/favicon.png') }}">
     <link rel="stylesheet" href="{{ asset('css/'.$version['css'].'/app.css') }}">
 </head>
-<body class="min-h-screen bg-gray-50 font-sans antialiased">
+<body class="flex min-h-screen flex-col bg-gray-50 font-sans antialiased">
     <x-layout.api-status />
+    <x-layout.navbar />
 
-    <div class="flex min-h-screen flex-col items-center justify-center px-4">
-        <div class="w-full max-w-sm">
-            <h1 class="mb-8 text-center text-xl font-semibold text-gray-900">{{ config('app.name') }}</h1>
-
+    <div class="flex flex-1 flex-col items-center justify-center px-4 py-12">
+        <div class="w-full max-w-md">
             <x-flash />
             <x-form-errors />
 
             {{ $slot }}
         </div>
     </div>
+
+    <x-layout.footer />
 </body>
 </html>

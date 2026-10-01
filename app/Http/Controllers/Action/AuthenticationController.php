@@ -14,15 +14,15 @@ class AuthenticationController extends Controller
 {
     public function signIn(Request $request, SignIn $signIn): RedirectResponse
     {
-        $result = $signIn($request->input('email', ''), $request->input('password', ''));
+        $result = $signIn($request->input('email', ''), $request->input('password', ''), $request->boolean('remember'));
 
         if ($result->ok) {
             $request->session()->regenerate();
 
-            return redirect()->route('dashboard');
+            return redirect()->route('resource-types.index');
         }
 
-        return $this->redirectForApiResult($result, 'dashboard');
+        return $this->redirectForApiResult($result, 'resource-types.index');
     }
 
     public function signOut(): RedirectResponse

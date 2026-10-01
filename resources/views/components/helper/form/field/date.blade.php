@@ -1,4 +1,4 @@
-@props(['name', 'title', 'required' => false, 'value' => null, 'errorKey' => null])
+@props(['name', 'title', 'required' => false, 'value' => null, 'hint' => null, 'errorKey' => null])
 
 @php($errorKey ??= $name)
 
@@ -13,6 +13,7 @@
         type="date"
         @if ($required) required @endif
         value="{{ old($errorKey, $value) }}"
-        {{ $attributes->merge(['class' => 'mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm '.($errors->has($errorKey) ? 'border-red-500 ring-1 ring-red-500' : '')]) }}
+        {{ $attributes->merge(['class' => 'form-control mt-1.5 '.($errors->has($errorKey) ? 'form-control-error' : '')]) }}
     />
+    @if ($hint)<p class="mt-1.5 text-xs text-gray-500">{{ $hint }}</p>@endif
 </div>

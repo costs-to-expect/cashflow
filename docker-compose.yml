@@ -1,10 +1,10 @@
 services:
-    costs.expense.app:
+    costs.cashflow.app:
         build:
             context: .
             dockerfile: .docker/app/Dockerfile
-        image: costs.expense.app
-        container_name: costs.expense.app
+        image: costs.cashflow.app
+        container_name: costs.cashflow.app
         ports:
             - "8081:80"
         volumes:
@@ -16,12 +16,12 @@ services:
             DB_DATABASE: ${DB_DATABASE}
             DB_USERNAME: ${DB_USERNAME}
             DB_PASSWORD: ${DB_PASSWORD}
-    costs.expense.mysql:
+    costs.cashflow.mysql:
         build:
             context: .
             dockerfile: .docker/mysql/Dockerfile
-        image: costs.expense.mysql
-        container_name: costs.expense.mysql
+        image: costs.cashflow.mysql
+        container_name: costs.cashflow.mysql
         ports:
             - "3309:3306"
         env_file: .env

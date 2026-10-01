@@ -6,7 +6,9 @@ namespace App\Http\Controllers\View;
 
 use App\Http\Controllers\Controller;
 use App\Models\DefaultSplitAllocation;
+use App\Models\ResourceType;
 use App\Service\Api\ApiService;
+use App\Service\Api\RequestPool;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -14,63 +16,111 @@ class ExpenseController extends Controller
 {
     public function __construct(private readonly ApiService $api) {}
 
-    public function create(Request $request): View
+    public function create(Request $request, ResourceType $resourceType): View
     {
-        $resources = $this->resources();
-        $currencies = $this->sortCurrenciesGbpFirst($this->currencies());
-        $categories = $this->categories();
+        // Two waves, the second needing what the first returns. The first is
+        // the resources, currencies and categories (and the nav's needs)...
+        $first = $this->api->pool(fn (RequestPool $pool) => $this->poolFormOptions($pool, $resourceType));
+
+        $resources = $this->content($first[RequestPool::RESOURCES]);
+        $currencies = $this->sortCurrenciesGbpFirst($this->content($first[RequestPool::CURRENCIES]));
+        $categories = $this->content($first[RequestPool::CATEGORIES] ?? null);
+
+        // ...the second each category's subcategories and, from each resource, its recent names.
+        $second = $this->api->pool(function (RequestPool $pool) use ($resources, $categories) {
+            $this->poolSubcategories($pool, $categories);
+            $this->poolNameSuggestions($pool, $resources);
+        });
 
         return view('expenses.create', [
             'resources' => $resources,
             'currencies' => $currencies,
             'defaultCurrencyId' => $this->resolveDefaultCurrencyId($currencies),
+            'categoriesEnabled' => $resourceType->categoriesEnabled(),
             'categories' => $categories,
-            'subcategoriesByCategory' => $this->subcategoriesByCategory($categories),
+            'subcategoriesByCategory' => $this->subcategoriesByCategory($categories, $second),
             'preselectedResourceId' => $request->query('resource_id'),
-            'defaultAllocations' => $this->defaultAllocationsFor($resources, $request->boolean('split')),
-            'defaultSplit' => $this->defaultSplitAllocations(),
-            'nameSuggestions' => $this->nameSuggestions($resources),
+            'defaultAllocations' => $this->defaultAllocationsFor($resources, $request->boolean('split'), $resourceType),
+            'defaultSplit' => $this->defaultSplitAllocations($resourceType),
+            'nameSuggestions' => $this->nameSuggestions($resources, $second),
         ]);
     }
 
-    public function edit(string $resource_id, string $item_id): View
+    public function edit(ResourceType $resourceType, string $resource_id, string $item_id): View
     {
-        $item = $this->api->item($resource_id, $item_id);
+        $categoriesEnabled = $resourceType->categoriesEnabled();
+
+        // Two waves, the second needing what the first returns. The first is
+        // the expense itself and its category assignment, plus what the
+        // create form's first wave fetches...
+        $first = $this->api->pool(function (RequestPool $pool) use ($resourceType, $resource_id, $item_id, $categoriesEnabled) {
+            $pool->item('item', $resource_id, $item_id);
+
+            if ($categoriesEnabled) {
+                $pool->itemCategories('itemCategories', $resource_id, $item_id);
+            }
+
+            $this->poolFormOptions($pool, $resourceType);
+        });
+
+        $item = $first['item'];
 
         abort_if($item['status'] !== 200, 404, 'That expense could not be found.');
 
-        [$currentCategoryId, $currentSubcategoryId] = $this->currentCategorisation($resource_id, $item_id);
+        $resources = $this->content($first[RequestPool::RESOURCES]);
+        $categories = $this->content($first[RequestPool::CATEGORIES] ?? null);
+        $currentItemCategory = $this->content($first['itemCategories'] ?? null)[0] ?? null;
 
-        $resources = $this->resources();
-        $categories = $this->categories();
+        // ...the second the expense's subcategory assignment (which needs its
+        // category assignment's id), and what the create form's second does.
+        $second = $this->api->pool(function (RequestPool $pool) use ($resource_id, $item_id, $resources, $categories, $currentItemCategory) {
+            if ($currentItemCategory !== null) {
+                $pool->itemSubcategories('itemSubcategories', $resource_id, $item_id, $currentItemCategory['id']);
+            }
+
+            $this->poolSubcategories($pool, $categories);
+            $this->poolNameSuggestions($pool, $resources);
+        });
+
+        [$currentCategoryId, $currentSubcategoryId] = $this->currentCategorisation($currentItemCategory, $second);
 
         return view('expenses.edit', [
             'resourceId' => $resource_id,
             'item' => $item['content'],
             'resources' => $resources,
-            'currencies' => $this->sortCurrenciesGbpFirst($this->currencies()),
+            'currencies' => $this->sortCurrenciesGbpFirst($this->content($first[RequestPool::CURRENCIES])),
+            'categoriesEnabled' => $categoriesEnabled,
             'categories' => $categories,
-            'subcategoriesByCategory' => $this->subcategoriesByCategory($categories),
+            'subcategoriesByCategory' => $this->subcategoriesByCategory($categories, $second),
             'currentCategoryId' => $currentCategoryId,
             'currentSubcategoryId' => $currentSubcategoryId,
-            'nameSuggestions' => $this->nameSuggestions($resources),
+            'nameSuggestions' => $this->nameSuggestions($resources, $second),
         ]);
     }
 
     /**
-     * Distinct names from recent expenses, for the "name" field's datalist.
+     * Each resource's recent expenses, for the "name" field's datalist (see
+     * nameSuggestions() for reading them back).
      */
-    private function nameSuggestions(array $resources): array
+    private function poolNameSuggestions(RequestPool $pool, array $resources): void
+    {
+        foreach ($resources as $resource) {
+            $pool->items('names.'.$resource['id'], $resource['id'], ['limit' => 100, 'sort' => 'effective_date:desc']);
+        }
+    }
+
+    /**
+     * Distinct names from recent expenses, for the "name" field's datalist.
+     *
+     * @param  array<string, array>  $responses  the pool poolNameSuggestions() was added to
+     */
+    private function nameSuggestions(array $resources, array $responses): array
     {
         $names = [];
 
         foreach ($resources as $resource) {
-            $items = $this->api->items($resource['id'], ['limit' => 100, 'sort' => 'effective_date:desc']);
-
-            if ($items['status'] === 200) {
-                foreach ($items['content'] as $item) {
-                    $names[$item['name']] = true;
-                }
+            foreach ($this->content($responses['names.'.$resource['id']]) as $item) {
+                $names[$item['name']] = true;
             }
         }
 
@@ -80,68 +130,28 @@ class ExpenseController extends Controller
         return array_slice($names, 0, 150);
     }
 
-    private function resources(): array
-    {
-        $resources = $this->api->resources();
-
-        return $resources['status'] === 200 ? $resources['content'] : [];
-    }
-
-    private function currencies(): array
-    {
-        $currencies = $this->api->currencies();
-
-        return $currencies['status'] === 200 ? $currencies['content'] : [];
-    }
-
-    private function categories(): array
-    {
-        $categories = $this->api->categories();
-
-        return $categories['status'] === 200 ? $categories['content'] : [];
-    }
-
-    private function subcategoriesByCategory(array $categories): array
-    {
-        $map = [];
-
-        foreach ($categories as $category) {
-            $response = $this->api->subcategories($category['id']);
-
-            $map[$category['id']] = $response['status'] === 200
-                ? collect($response['content'])->map(fn ($s) => ['id' => $s['id'], 'name' => $s['name']])->all()
-                : [];
-        }
-
-        return $map;
-    }
-
     /**
+     * @param  ?array<string, mixed>  $itemCategory  the expense's category assignment, if it has one
+     * @param  array<string, array>  $responses  the pool its subcategory assignment was requested in
      * @return array{0: ?string, 1: ?string} [currentCategoryId, currentSubcategoryId]
      */
-    private function currentCategorisation(string $resourceId, string $itemId): array
+    private function currentCategorisation(?array $itemCategory, array $responses): array
     {
-        $itemCategories = $this->api->itemCategories($resourceId, $itemId);
-        $current = $itemCategories['status'] === 200 ? ($itemCategories['content'][0] ?? null) : null;
-
-        if ($current === null) {
+        if ($itemCategory === null) {
             return [null, null];
         }
 
-        $currentCategoryId = $current['category']['id'];
+        $currentSub = $this->content($responses['itemSubcategories'])[0] ?? null;
 
-        $itemSubcategories = $this->api->itemSubcategories($resourceId, $itemId, $current['id']);
-        $currentSub = $itemSubcategories['status'] === 200 ? ($itemSubcategories['content'][0] ?? null) : null;
-
-        return [$currentCategoryId, $currentSub['subcategory']['id'] ?? null];
+        return [$itemCategory['category']['id'], $currentSub['subcategory']['id'] ?? null];
     }
 
-    private function defaultSplitAllocations(): array
+    private function defaultSplitAllocations(ResourceType $resourceType): array
     {
-        return DefaultSplitAllocation::query()->orderBy('sort_order')->get(['resource_id', 'percentage'])->toArray();
+        return DefaultSplitAllocation::query()->where('resource_type_id', $resourceType->id)->orderBy('sort_order')->get(['resource_id', 'percentage'])->toArray();
     }
 
-    private function defaultAllocationsFor(array $resources, bool $forceSplit): ?array
+    private function defaultAllocationsFor(array $resources, bool $forceSplit, ResourceType $resourceType): ?array
     {
         if (! $forceSplit || old('allocations') !== null) {
             return null;
@@ -149,7 +159,7 @@ class ExpenseController extends Controller
 
         $validResourceIds = collect($resources)->pluck('id')->all();
 
-        $filtered = collect($this->defaultSplitAllocations())
+        $filtered = collect($this->defaultSplitAllocations($resourceType))
             ->filter(fn ($allocation) => in_array($allocation['resource_id'], $validResourceIds, true))
             ->values()
             ->all();

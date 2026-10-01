@@ -1,6 +1,9 @@
 @import 'tailwindcss';
 
 @source '../../resources/**/*.blade.php';
+/* Class names that only appear in PHP (resource colours) or in strings built by our own JS. */
+@source '../../app/Support';
+@source '../../public/js';
 
 @theme {
     --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji';
@@ -16,6 +19,9 @@
     --color-brand-700: #6B0B68;
     --color-brand-800: #5C0759;
     --color-brand-900: #4D044B;
+
+    /* A soft tint of the brand purple, for light backgrounds and hovers. */
+    --color-brand-tint: #FBF2FA;
 }
 
 /*
@@ -32,5 +38,21 @@
         background-position: right 0.5rem center;
         background-size: 1.5em 1.5em;
         padding-right: 2.5rem;
+    }
+}
+
+/*
+ * The one look for every form input, select and textarea - used by the
+ * x-helper.form.field.* components and by anything our JS builds. Custom
+ * CSS (not a Blade component) so JS-built fields can share it too.
+ * Selects also add pr-10 so long options don't run under the arrow.
+ */
+@layer components {
+    .form-control {
+        @apply block w-full rounded-xl border-0 bg-white px-3.5 py-2.5 text-sm text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-brand-700;
+    }
+
+    .form-control-error {
+        @apply ring-red-500 focus:ring-red-500;
     }
 }
