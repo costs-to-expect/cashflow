@@ -33,6 +33,9 @@
                 <p class="mt-4 text-sm text-gray-400">
                     <a href="https://www.deanblackborough.com" class="hover:text-gray-600">Dean Blackborough</a> &copy; 2026
                 </p>
+                <p class="mt-4 text-sm text-gray-400">
+                    Version {{ config('app.version.app') }}, released {{ config('app.version.date') }}
+                </p>
             </div>
         </div>
     </div>
