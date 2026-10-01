@@ -43,7 +43,7 @@ hard-coded two-user allow-list and no public registration.
 
 ## Tech stack
 
-- Laravel 12, PHP 8.3+
+- Laravel 12, PHP 8.4+
 - Tailwind CSS v4 (compiled via the standalone CLI, no Node/npm — see
   `bin/css`)
 - Plain vanilla JavaScript for form interactivity, no build step
