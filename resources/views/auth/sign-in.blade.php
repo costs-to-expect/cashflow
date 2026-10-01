@@ -1,4 +1,4 @@
-<x-layouts.guest>
+<x-layouts.guest title="Sign in | Costs to Expect: Cashflow">
     <x-hero eyebrow="Sign in" title="Welcome back" description="Sign in to pick up where you left off." />
 
     <form method="POST" action="{{ route('auth.sign-in.action') }}" class="mt-6 space-y-5 rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-200 sm:p-6">

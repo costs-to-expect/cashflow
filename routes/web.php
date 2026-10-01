@@ -12,12 +12,16 @@ use App\Http\Controllers\View\ExpenseController as ExpenseView;
 use App\Http\Controllers\View\RecurringController as RecurringView;
 use App\Http\Controllers\View\ResourceController as ResourceView;
 use App\Http\Controllers\View\ResourceTypeController as ResourceTypeView;
+use App\Http\Controllers\View\SeoController;
 use App\Http\Controllers\View\SettingsController as SettingsView;
 use App\Http\Middleware\EnsureCategoriesEnabled;
 use App\Http\Middleware\ResolveResourceType;
 use Illuminate\Support\Facades\Route;
 
 Route::view('/', 'welcome')->name('welcome');
+
+Route::get('/sitemap.xml', [SeoController::class, 'sitemap'])->name('sitemap');
+Route::get('/robots.txt', [SeoController::class, 'robots'])->name('robots');
 
 Route::middleware('guest')->group(function () {
     Route::get('/sign-in', [AuthenticationView::class, 'signIn'])->name('auth.sign-in');

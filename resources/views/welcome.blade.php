@@ -1,18 +1,12 @@
 @php
-    $description = 'Track expenses and money in, split each one by percentage across projects, properties, clients or anything else you manage, and see running totals for every reporting period that matters. Built on the Costs to Expect API.';
+    $description = 'Track expenses and money in, split each one by percentage across projects, properties or clients, and see running totals for every reporting period.';
 @endphp
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="{{ $description }}">
-    <meta property="og:type" content="website">
-    <meta property="og:site_name" content="Costs to Expect">
-    <meta property="og:title" content="{{ config('app.name') }}">
-    <meta property="og:description" content="{{ $description }}">
-    <meta property="og:url" content="{{ url('/') }}">
-    <title>{{ config('app.name') }} | Track money in and out</title>
+    <x-layout.seo :title="config('app.name').' | Track money in and out'" :description="$description" index />
     <link rel="icon" sizes="48x48" href="{{ asset('images/favicon.ico') }}">
     <link rel="icon" type="image/png" sizes="192x192" href="{{ asset('images/favicon.png') }}">
     <link rel="stylesheet" href="{{ asset('css/'.$version['css'].'/app.css') }}">
