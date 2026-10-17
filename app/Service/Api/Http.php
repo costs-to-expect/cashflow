@@ -114,11 +114,15 @@ class Http
         return $this->respond($this->client->post($uri, $this->withoutNulls($payload)), 'POST', $uri, $start);
     }
 
-    public function patch(string $uri, array $payload = []): array
+    /**
+     * @param  list<string>  $nullable  fields a PATCH accepts as an explicit null, which is how
+     *                                  a value is cleared - these keep a null instead of dropping it
+     */
+    public function patch(string $uri, array $payload = [], array $nullable = []): array
     {
         $start = microtime(true);
 
-        return $this->respond($this->client->patch($uri, $this->withoutNulls($payload)), 'PATCH', $uri, $start);
+        return $this->respond($this->client->patch($uri, $this->withoutNulls($payload, $nullable)), 'PATCH', $uri, $start);
     }
 
     public function delete(string $uri): array
@@ -209,10 +213,13 @@ class Http
      * for its optional fields (e.g. description) - null fails validation,
      * omitting the key is accepted. Every optional field we might send as
      * null (a blank form field) needs to be dropped rather than passed through.
+     * The exception is a PATCH clearing a field that allows it ($keep).
+     *
+     * @param  list<string>  $keep
      */
-    private function withoutNulls(array $payload): array
+    private function withoutNulls(array $payload, array $keep = []): array
     {
-        return array_filter($payload, static fn ($value) => $value !== null);
+        return array_filter($payload, static fn ($value, $key) => $value !== null || in_array($key, $keep, true), ARRAY_FILTER_USE_BOTH);
     }
 
     private function respond(Response $response, string $method, string $uri, float $start): array

@@ -16,6 +16,9 @@ class UpdateExpense
      * resource type with categories turned off doesn't send them, and an
      * absent key must leave whatever the item already has untouched - not
      * clear it - so turning categories back on finds them still there.
+     *
+     * publish_after goes through with the rest of the payload, so a date sets
+     * it, null clears it and an absent key leaves it as it is.
      */
     public function __invoke(string $resourceId, string $itemId, array $payload): ApiActionResult
     {

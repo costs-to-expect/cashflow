@@ -1,10 +1,11 @@
-@props(['index', 'resources', 'colours', 'resourceId', 'percentage' => null, 'split' => false, 'share' => true, 'term' => 'Resource'])
+@props(['index', 'resources', 'colours', 'resourceId', 'percentage' => null, 'split' => false, 'share' => true, 'term' => 'Resource', 'percentageAlways' => false])
 
 {{--
     One row of the add-expense split: which resource, what percentage, and (filled in by
     public/js/*/expense-split.js) how much that comes to. Rendered both for the rows already on
     the page and, with a placeholder index, as the <template> the script clones for new rows.
-    The percentage and remove button are only shown while the expense is split.
+    The remove button is only shown while the expense is split. So is the percentage, unless
+    percentageAlways is set - then it can be set on a lone row too (a share of the total).
 --}}
 @php
     $resourceKey = 'allocations.'.$index.'.resource_id';
@@ -22,7 +23,7 @@
         </select>
     </div>
 
-    <label data-split-only class="{{ $split ? '' : 'hidden' }} {{ $share ? '' : 'ml-auto' }} relative w-24">
+    <label @if (! $percentageAlways) data-split-only @endif class="{{ $split || $percentageAlways ? '' : 'hidden' }} {{ $share ? '' : 'ml-auto' }} relative w-24">
         <span class="sr-only">Percentage</span>
         <input type="number" name="allocations[{{ $index }}][percentage]" value="{{ $percentage }}" min="1" max="100" required
                class="form-control py-2 pr-7 text-right {{ $errors->has($percentageKey) ? 'form-control-error' : '' }}">
