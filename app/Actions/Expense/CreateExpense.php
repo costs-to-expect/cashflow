@@ -24,7 +24,7 @@ class CreateExpense
     public function __construct(private readonly ApiService $api) {}
 
     /**
-     * @param  array{name: string, description: ?string, effective_date: string, currency_id: string, total: string, category_id?: ?string, subcategory_id?: ?string}  $expense
+     * @param  array{name: string, description: ?string, effective_date: string, currency_id: string, total: string, publish_after?: ?string, category_id?: ?string, subcategory_id?: ?string}  $expense
      * @param  array<int, array{resource_id: string, percentage: int}>  $allocations
      */
     public function __invoke(array $expense, array $allocations): ApiActionResult
@@ -47,6 +47,12 @@ class CreateExpense
             // The API defaults percentage to 100 when it's not sent.
             if ((int) $allocation['percentage'] !== 100) {
                 $payload['percentage'] = $allocation['percentage'];
+            }
+
+            // Optional: left out, the expense counts straight away. Every item of a
+            // split shares the one date.
+            if (! empty($expense['publish_after'])) {
+                $payload['publish_after'] = $expense['publish_after'];
             }
 
             $response = $this->api->createItem($allocation['resource_id'], $payload);

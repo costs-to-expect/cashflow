@@ -25,6 +25,11 @@
                     :hint="'The share of the total recorded against this '.strtolower($resourceTermSingular).'.'" />
             </section>
 
+            {{-- Only when the API says what it is. Without that the field would start empty and saving would clear a date it holds. --}}
+            @if (array_key_exists('publish_after', $item))
+                <x-expense.publish-after :value="$item['publish_after']" />
+            @endif
+
             <div class="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
                 <x-button variant="secondary" :href="$resourceUrl">Cancel</x-button>
                 <x-button>Save changes</x-button>

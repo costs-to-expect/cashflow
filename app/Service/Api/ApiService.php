@@ -142,7 +142,8 @@ class ApiService
 
     public function updateItem(string $resourceId, string $itemId, array $payload): array
     {
-        return $this->http->patch(Uri::item($this->resourceTypeId, $resourceId, $itemId), $payload);
+        // publish_after is cleared by sending null, the one item field the form does that for.
+        return $this->http->patch(Uri::item($this->resourceTypeId, $resourceId, $itemId), $payload, ['publish_after']);
     }
 
     public function deleteItem(string $resourceId, string $itemId): array

@@ -22,6 +22,7 @@ class ExpenseController extends Controller
             'effective_date' => ['required', 'date'],
             'currency_id' => ['required', 'string'],
             'total' => ['required', 'regex:/^\d+(\.\d{1,2})?$/'],
+            'publish_after' => ['nullable', 'date_format:Y-m-d'],
             ...$this->categoryRules($resourceType),
             'allocations' => ['required', 'array', 'min:1'],
             'allocations.*.resource_id' => ['required', 'string'],
@@ -35,6 +36,7 @@ class ExpenseController extends Controller
                 'effective_date' => $validated['effective_date'],
                 'currency_id' => $validated['currency_id'],
                 'total' => $validated['total'],
+                'publish_after' => $validated['publish_after'] ?? null,
                 'category_id' => $validated['category_id'] ?? null,
                 'subcategory_id' => $validated['subcategory_id'] ?? null,
             ],
@@ -62,11 +64,14 @@ class ExpenseController extends Controller
             'currency_id' => ['required', 'string'],
             'total' => ['required', 'regex:/^\d+(\.\d{1,2})?$/'],
             'percentage' => ['required', 'integer', 'min:1', 'max:100'],
+            'publish_after' => ['nullable', 'date_format:Y-m-d'],
             ...$this->categoryRules($resourceType),
         ]);
 
         // With categories turned off the category keys aren't in $validated at
         // all, which UpdateExpense reads as "leave the categorisation alone".
+        // The same goes for publish_after: the form only has the field when the
+        // API reported the current date, and a blank one clears it (null).
         $result = $updateExpense($resource_id, $item_id, $validated);
 
         return $this->redirectForApiResult(

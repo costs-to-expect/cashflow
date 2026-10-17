@@ -15,8 +15,10 @@
 
                 <x-expense.details :categories-enabled="$categoriesEnabled" :categories="$categories" :subcategories-by-category="$subcategoriesByCategory" :name-suggestions="$nameSuggestions" />
 
-                <x-expense.split :resources="$resources" :term="$resourceTermSingular" :default-split="$defaultSplit"
+                <x-expense.split :resources="$resources" :term="$resourceTermSingular" :default-split="$defaultSplit" percentage-always
                     :allocations="old('allocations', $defaultAllocations ?? [['resource_id' => $preselectedResourceId ?? $resources[0]['id'], 'percentage' => 100]])" />
+
+                <x-expense.publish-after />
 
                 <div class="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
                     <x-button variant="secondary" :href="route('dashboard', $currentResourceType)">Cancel</x-button>

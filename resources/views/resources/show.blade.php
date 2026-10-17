@@ -52,6 +52,10 @@
                                 @endif
                                 <p class="mt-0.5 text-xs text-gray-500">
                                     {{ \Illuminate\Support\Carbon::parse($item['effective_date'])->format('D j M') }}
+                                    {{-- Held back by "publish after": in this list, but not in the totals above. --}}
+                                    @if (filled($item['publish_after'] ?? null) && \Illuminate\Support\Carbon::parse($item['publish_after'])->isFuture())
+                                        <span class="ml-1 rounded-md bg-amber-50 px-1.5 py-0.5 font-medium text-amber-800 ring-1 ring-amber-200">Publishes {{ \Illuminate\Support\Carbon::parse($item['publish_after'])->format('j M') }}</span>
+                                    @endif
                                     @if ($categoriesEnabled && count($item['categories'] ?? []) > 0)
                                         · {{ $item['categories'][0]['name'] }}
                                         @if (count($item['categories'][0]['subcategories'] ?? []) > 0)
