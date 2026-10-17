@@ -15,6 +15,8 @@
     }
 
     var alwaysSplit = root.dataset.alwaysSplit === 'true';
+    // The add-expense form keeps the percentage on show for a lone row too (a share of the total).
+    var percentageAlways = root.dataset.percentageAlways === 'true';
     var resources = JSON.parse(container.dataset.resources || '[]');
     var defaultSplit = JSON.parse(container.dataset.defaultSplit || '[]');
 
@@ -23,6 +25,7 @@
     var help = document.getElementById('split-help');
     var bar = document.getElementById('split-bar');
     var status = document.getElementById('split-status');
+    var singleSummary = document.getElementById('split-single-summary');
     var addButton = document.getElementById('add-allocation');
     var evenButton = document.getElementById('split-even');
     var defaultButton = document.getElementById('split-default');
@@ -149,7 +152,7 @@
         }
 
         rows().forEach(function (row) {
-            var percentage = split ? (parseFloat(percentageInput(row).value) || 0) : 100;
+            var percentage = (split || percentageAlways) ? (parseFloat(percentageInput(row).value) || 0) : 100;
             var resource = resourceById(resourceSelect(row).value);
             var colour = resource ? resource.dot : 'bg-gray-400';
             var share = row.querySelector('[data-share]');
@@ -183,6 +186,36 @@
         if (help) {
             help.textContent = split ? help.dataset.textSplit : help.dataset.textSingle;
         }
+
+        if (singleSummary) {
+            singleSummary.classList.toggle('hidden', split);
+
+            if (!split) {
+                singleSummary.textContent = singleSummaryText(total, code);
+            }
+        }
+    }
+
+    // "40% of GBP 100.00 counts toward Alice." - or, at 100%, "All of it counts toward Alice."
+    // Blank while the percentage isn't a usable 1-100, which the form's own validation flags.
+    function singleSummaryText(total, code) {
+        var row = rows()[0];
+        var percentage = row ? parseFloat(percentageInput(row).value) : NaN;
+
+        if (!row || !(percentage >= 1 && percentage <= 100)) {
+            return '';
+        }
+
+        var resource = resourceById(resourceSelect(row).value);
+        var name = resource ? resource.name : 'them';
+
+        if (percentage === 100) {
+            return 'All of it counts toward ' + name + '.';
+        }
+
+        return total > 0
+            ? percentage + '% of ' + code + ' ' + formatMoney(total) + ' counts toward ' + name + '.'
+            : percentage + '% of the total counts toward ' + name + '.';
     }
 
     if (toggle) {

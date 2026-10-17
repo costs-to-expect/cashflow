@@ -7,6 +7,7 @@
     'amounts' => true,
     'heading' => 'Who is it for?',
     'description' => null,
+    'percentageAlways' => false,
 ])
 
 {{--
@@ -19,6 +20,8 @@
     defaultSplit list of {resource_id, percentage}; offered as "Use default split" if it covers 2+ resources
     always       no on/off toggle - it is always a split (the default split settings page)
     amounts      show each row's share of #total (needs #total and #currency_id on the page)
+    percentageAlways  keep the percentage on show when not split, so one resource can be given just
+                      a share of the total (the add-expense form). Off, a lone row is always 100%.
 --}}
 @php
     $colours = \App\Support\ResourceColours::forResources($resources);
@@ -32,11 +35,13 @@
     $applicableDefault = collect($defaultSplit)->filter(fn ($allocation) => collect($resources)->contains('id', $allocation['resource_id']))->values();
     $defaultLabel = $applicableDefault->count() >= 2 ? $applicableDefault->pluck('percentage')->implode(' / ') : null;
 
-    $helpSingle = "All of it goes to one {$termLower}. Turn on split to share it by percentage.";
+    $helpSingle = $percentageAlways
+        ? "Pick a {$termLower} and the share of the total that counts toward them. Turn on split to share it across more than one."
+        : "All of it goes to one {$termLower}. Turn on split to share it by percentage.";
     $helpSplit = $amounts ? "Shared by percentage. Each {$termLower}'s amount updates as you go." : 'Shared by percentage.';
 @endphp
 
-<section id="split-section" data-always-split="{{ $always ? 'true' : 'false' }}" class="space-y-4 rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-200 sm:p-6">
+<section id="split-section" data-always-split="{{ $always ? 'true' : 'false' }}" data-percentage-always="{{ $percentageAlways ? 'true' : 'false' }}" class="space-y-4 rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-200 sm:p-6">
     <div class="flex items-start justify-between gap-4">
         <div>
             <h2 class="text-base font-semibold text-gray-900">{{ $heading }}</h2>
@@ -64,9 +69,14 @@
          data-default-split='@json($applicableDefault)'>
         @foreach ($allocations as $index => $allocation)
             <x-expense.allocation-row :index="$index" :resources="$resources" :colours="$colours" :resource-id="$allocation['resource_id']"
-                :percentage="$allocation['percentage']" :split="$isSplit" :share="$amounts" :term="$term" />
+                :percentage="$allocation['percentage']" :split="$isSplit" :share="$amounts" :term="$term" :percentage-always="$percentageAlways" />
         @endforeach
     </div>
+
+    @if ($percentageAlways && ! $always)
+        {{-- What a lone row's percentage comes to; hidden while split (the bar and status take over). --}}
+        <p id="split-single-summary" class="{{ $isSplit ? 'hidden' : '' }} text-sm text-gray-600"></p>
+    @endif
 
     @if ($canToggle || $always)
         <div data-split-only class="{{ $isSplit ? '' : 'hidden' }} space-y-3">
@@ -84,7 +94,7 @@
 
         <template id="allocation-row-template">
             <x-expense.allocation-row index="__INDEX__" :resources="$resources" :colours="$colours" :resource-id="$resources[0]['id']"
-                :split="true" :share="$amounts" :term="$term" />
+                :split="true" :share="$amounts" :term="$term" :percentage-always="$percentageAlways" />
         </template>
     @endif
 </section>
