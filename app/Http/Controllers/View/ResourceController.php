@@ -49,6 +49,9 @@ class ResourceController extends Controller
                 'sort' => 'effective_date:desc',
                 'limit' => $perPage,
                 'offset' => ($page - 1) * $perPage,
+                // An expense held back with "publish after" would otherwise vanish from
+                // the list (and so couldn't be found to edit). The totals still leave it out.
+                'include-unpublished' => 'true',
                 // The labels are only shown while categories are turned on.
                 ...($categoriesEnabled ? ['include-categories' => 'true', 'include-subcategories' => 'true'] : []),
             ]);
