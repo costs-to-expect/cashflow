@@ -74,7 +74,7 @@
                         </div>
 
                         <div class="-mb-2 -ml-2 mt-1 flex text-sm sm:m-0 sm:shrink-0">
-                            <x-expense.actions :resource="$resource" :item="$item" />
+                            <x-expense.actions :resource="$resource" :item="$item" :can-copy-to="count($otherResources) > 0" />
                         </div>
                     </li>
                 @endforeach
@@ -92,6 +92,12 @@
                 <a href="{{ route('resources.show', ['resourceType' => $currentResourceType, 'resource_id' => $resource['id'], 'page' => $page + 1]) }}" class="text-brand-700 hover:underline">Older &rarr;</a>
             @endif
         </div>
+    @endif
+
+    @if (count($items) > 0 && count($otherResources) > 0)
+        <x-expense.copy-to-dialog :resources="$otherResources" />
+
+        <script src="{{ asset('js/'.$version['js'].'/copy-to.js') }}" defer></script>
     @endif
 
     <script src="{{ asset('js/'.$version['js'].'/period-switcher.js') }}" defer></script>

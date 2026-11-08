@@ -71,6 +71,11 @@ class ResourceController extends Controller
             'categoriesEnabled' => $categoriesEnabled,
             'resource' => $resource['content'],
             'periodTotals' => $this->periodTotals->forResource($resourceType, $resource_id, $responses),
+            // The nav's resources (already fetched, in the pool above) bar this one: where "Copy to" can send an expense.
+            'otherResources' => collect($this->content($responses[RequestPool::RESOURCES] ?? null))
+                ->reject(fn (array $other) => (string) $other['id'] === $resource_id)
+                ->values()
+                ->all(),
             'items' => $items['status'] === 200 ? $items['content'] : [],
             'page' => $page,
             'hasMore' => $items['status'] === 200 && count($items['content']) === $perPage,

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Action;
 
+use App\Actions\Expense\CopyExpense;
 use App\Actions\Expense\CreateExpense;
 use App\Actions\Expense\DeleteExpense;
 use App\Actions\Expense\UpdateExpense;
@@ -79,6 +80,25 @@ class ExpenseController extends Controller
             'resources.show',
             ['resourceType' => $resourceType, 'resource_id' => $resource_id],
             "{$validated['name']} has been updated.",
+        );
+    }
+
+    /**
+     * The copy-to pop-up's "Copy": the expense as it is, on another resource.
+     */
+    public function copyTo(Request $request, ResourceType $resourceType, string $resource_id, string $item_id, CopyExpense $copyExpense): RedirectResponse
+    {
+        $validated = $request->validate([
+            'target_resource_id' => ['required', 'string'],
+        ]);
+
+        $result = $copyExpense($resourceType, $resource_id, $item_id, $validated['target_resource_id']);
+
+        return $this->redirectForApiResult(
+            $result,
+            'resources.show',
+            ['resourceType' => $resourceType, 'resource_id' => $validated['target_resource_id']],
+            $result->ok ? "{$result->data['name']} has been copied to {$result->data['target']}." : 'Done.',
         );
     }
 
