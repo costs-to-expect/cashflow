@@ -43,27 +43,65 @@
 
             <ul class="divide-y divide-gray-100 overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-gray-200">
                 @foreach ($monthItems as $item)
-                    <li class="px-4 py-3.5 sm:flex sm:items-center sm:gap-4 sm:px-5">
-                        <div class="flex flex-1 items-start justify-between gap-4">
+                    @php
+                        $date = \Illuminate\Support\Carbon::parse($item['effective_date']);
+
+                        // Held back by "publish after": in this list, but not in the totals above.
+                        $publishesOn = filled($item['publish_after'] ?? null) && \Illuminate\Support\Carbon::parse($item['publish_after'])->isFuture()
+                            ? \Illuminate\Support\Carbon::parse($item['publish_after'])->format('j M')
+                            : null;
+
+                        $category = $categoriesEnabled ? ($item['categories'][0] ?? null) : null;
+                        $subcategory = $category['subcategories'][0] ?? null;
+                    @endphp
+
+                    {{--
+                        From md up a row is columns: date, then the name with its description and actions, then the
+                        category (only while categories are on), then the amount. Below that the date and category
+                        go on the line under the name, and the amount sits to the right of it.
+                    --}}
+                    <li @class([
+                        'px-4 py-3.5 md:grid md:items-start md:gap-x-4 md:px-5',
+                        'md:grid-cols-[5.5rem_minmax(0,1fr)_10rem_7.5rem]' => $categoriesEnabled,
+                        'md:grid-cols-[5.5rem_minmax(0,1fr)_7.5rem]' => ! $categoriesEnabled,
+                    ])>
+                        <p class="hidden pt-0.5 text-sm text-gray-500 md:block">{{ $date->format('D j M') }}</p>
+
+                        <div class="flex items-start justify-between gap-4 md:contents">
                             <div class="min-w-0">
-                                <p class="font-medium text-gray-900">{{ $item['name'] }}</p>
+                                <p class="font-medium text-gray-900">
+                                    {{ $item['name'] }}
+                                    @if ($publishesOn)
+                                        <span class="ml-2 hidden rounded-md bg-amber-50 px-1.5 py-0.5 align-middle text-xs font-medium text-amber-800 ring-1 ring-amber-200 md:inline">Publishes {{ $publishesOn }}</span>
+                                    @endif
+                                </p>
                                 @if ($item['description'])
                                     <p class="mt-0.5 text-sm text-gray-600">{{ $item['description'] }}</p>
                                 @endif
-                                <p class="mt-0.5 text-xs text-gray-500">
-                                    {{ \Illuminate\Support\Carbon::parse($item['effective_date'])->format('D j M') }}
-                                    {{-- Held back by "publish after": in this list, but not in the totals above. --}}
-                                    @if (filled($item['publish_after'] ?? null) && \Illuminate\Support\Carbon::parse($item['publish_after'])->isFuture())
-                                        <span class="ml-1 rounded-md bg-amber-50 px-1.5 py-0.5 font-medium text-amber-800 ring-1 ring-amber-200">Publishes {{ \Illuminate\Support\Carbon::parse($item['publish_after'])->format('j M') }}</span>
+                                <p class="mt-0.5 text-xs text-gray-500 md:hidden">
+                                    {{ $date->format('D j M') }}
+                                    @if ($publishesOn)
+                                        <span class="ml-1 rounded-md bg-amber-50 px-1.5 py-0.5 font-medium text-amber-800 ring-1 ring-amber-200">Publishes {{ $publishesOn }}</span>
                                     @endif
-                                    @if ($categoriesEnabled && count($item['categories'] ?? []) > 0)
-                                        · {{ $item['categories'][0]['name'] }}
-                                        @if (count($item['categories'][0]['subcategories'] ?? []) > 0)
-                                            &rsaquo; {{ $item['categories'][0]['subcategories'][0]['name'] }}
+                                    @if ($category)
+                                        · {{ $category['name'] }}
+                                        @if ($subcategory)
+                                            &rsaquo; {{ $subcategory['name'] }}
                                         @endif
                                     @endif
                                 </p>
+
+                                <div class="-mb-2 -ml-2 mt-1 flex flex-wrap text-sm">
+                                    <x-expense.actions :resource="$resource" :item="$item" :can-copy-to="count($otherResources) > 0" />
+                                </div>
                             </div>
+
+                            {{-- Always there while categories are on, even empty, so the amount stays in its column. --}}
+                            @if ($categoriesEnabled)
+                                <p class="hidden pt-0.5 text-sm text-gray-500 md:block">
+                                    @if ($category){{ $category['name'] }}@if ($subcategory) &rsaquo; {{ $subcategory['name'] }}@endif @endif
+                                </p>
+                            @endif
 
                             <div class="shrink-0 text-right">
                                 <span class="block font-semibold tabular-nums text-gray-900">{{ $item['currency']['code'] }} {{ number_format((float) $item['actualised_total'], 2) }}</span>
@@ -71,10 +109,6 @@
                                     <span class="block text-xs text-gray-500">{{ $item['percentage'] }}% of {{ number_format((float) $item['total'], 2) }}</span>
                                 @endif
                             </div>
-                        </div>
-
-                        <div class="-mb-2 -ml-2 mt-1 flex text-sm sm:m-0 sm:shrink-0">
-                            <x-expense.actions :resource="$resource" :item="$item" />
                         </div>
                     </li>
                 @endforeach
@@ -92,6 +126,12 @@
                 <a href="{{ route('resources.show', ['resourceType' => $currentResourceType, 'resource_id' => $resource['id'], 'page' => $page + 1]) }}" class="text-brand-700 hover:underline">Older &rarr;</a>
             @endif
         </div>
+    @endif
+
+    @if (count($items) > 0 && count($otherResources) > 0)
+        <x-expense.copy-to-dialog :resources="$otherResources" />
+
+        <script src="{{ asset('js/'.$version['js'].'/copy-to.js') }}" defer></script>
     @endif
 
     <script src="{{ asset('js/'.$version['js'].'/period-switcher.js') }}" defer></script>

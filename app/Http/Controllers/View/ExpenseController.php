@@ -48,6 +48,53 @@ class ExpenseController extends Controller
 
     public function edit(ResourceType $resourceType, string $resource_id, string $item_id): View
     {
+        return view('expenses.edit', [
+            'resourceId' => $resource_id,
+            ...$this->expenseFormData($resourceType, $resource_id, $item_id),
+        ]);
+    }
+
+    /**
+     * The add-expense form, prefilled from an existing expense. It posts to
+     * the same route as the plain form. "to" is the resource the copy goes
+     * to, the expense's own unless it names another of the resource type's.
+     */
+    public function copy(Request $request, ResourceType $resourceType, string $resource_id, string $item_id): View
+    {
+        $form = $this->expenseFormData($resourceType, $resource_id, $item_id);
+
+        $item = $form['item'];
+        $resourceIds = collect($form['resources'])->pluck('id')->map(fn ($id) => (string) $id)->all();
+        $to = $request->query('to');
+
+        return view('expenses.create', [
+            'resources' => $form['resources'],
+            'currencies' => $form['currencies'],
+            'defaultCurrencyId' => $item['currency']['id'],
+            'categoriesEnabled' => $form['categoriesEnabled'],
+            'categories' => $form['categories'],
+            'subcategoriesByCategory' => $form['subcategoriesByCategory'],
+            'defaultAllocations' => [[
+                'resource_id' => is_string($to) && in_array($to, $resourceIds, true) ? $to : $resource_id,
+                'percentage' => (int) ($item['percentage'] ?? 100),
+            ]],
+            'defaultSplit' => $this->defaultSplitAllocations($resourceType),
+            'nameSuggestions' => $form['nameSuggestions'],
+            'copyOf' => $item,
+            'copyOfResourceId' => $resource_id,
+            'currentCategoryId' => $form['currentCategoryId'],
+            'currentSubcategoryId' => $form['currentSubcategoryId'],
+        ]);
+    }
+
+    /**
+     * What the edit and copy forms both need: the expense, its category and
+     * subcategory, and the options the add form is given.
+     *
+     * @return array<string, mixed>
+     */
+    private function expenseFormData(ResourceType $resourceType, string $resource_id, string $item_id): array
+    {
         $categoriesEnabled = $resourceType->categoriesEnabled();
 
         // Two waves, the second needing what the first returns. The first is
@@ -84,8 +131,7 @@ class ExpenseController extends Controller
 
         [$currentCategoryId, $currentSubcategoryId] = $this->currentCategorisation($currentItemCategory, $second);
 
-        return view('expenses.edit', [
-            'resourceId' => $resource_id,
+        return [
             'item' => $item['content'],
             'resources' => $resources,
             'currencies' => $this->sortCurrenciesGbpFirst($this->content($first[RequestPool::CURRENCIES])),
@@ -95,7 +141,7 @@ class ExpenseController extends Controller
             'currentCategoryId' => $currentCategoryId,
             'currentSubcategoryId' => $currentSubcategoryId,
             'nameSuggestions' => $this->nameSuggestions($resources, $second),
-        ]);
+        ];
     }
 
     /**

@@ -48,6 +48,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/expenses/create', [ExpenseView::class, 'create'])->name('expenses.create');
         Route::post('/expenses', [ExpenseAction::class, 'store'])->name('expenses.store');
         Route::get('/resources/{resource_id}/expenses/{item_id}/edit', [ExpenseView::class, 'edit'])->name('expenses.edit');
+        Route::get('/resources/{resource_id}/expenses/{item_id}/copy', [ExpenseView::class, 'copy'])->name('expenses.copy');
+        Route::post('/resources/{resource_id}/expenses/{item_id}/copy-to', [ExpenseAction::class, 'copyTo'])->name('expenses.copy-to');
         Route::post('/resources/{resource_id}/expenses/{item_id}/update', [ExpenseAction::class, 'update'])->name('expenses.update');
         Route::post('/resources/{resource_id}/expenses/{item_id}/delete', [ExpenseAction::class, 'destroy'])->name('expenses.delete');
 
